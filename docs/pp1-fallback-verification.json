@@ -1,0 +1,50 @@
+{
+  "route_id": "ROUTE_62699ac77bb94a45bdc7f01de88a670d",
+  "version": 1,
+  "vehicle_id": "PP1_DEMO_0c1effd6_VAN_B",
+  "direction": "morning",
+  "feasibility_status": "feasible",
+  "driving_seconds": 2335,
+  "provider_source": {
+    "provider": "xgboost_synthetic_v1",
+    "warnings": [
+      "Unknown segment: model uses available numeric/known ID features; baseline uses training-only global mean.",
+      "Weather input missing: explicit unknown encoding used; no weather forecast was fetched."
+    ],
+    "direction": "morning",
+    "description": "This demonstrates a synthetic-data ML pipeline. Real-world accuracy has not yet been established.",
+    "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+    "route_is_mixed": false,
+    "distance_source": "haversine_straight_line",
+    "duration_source": "ml_prediction",
+    "fallback_policy": "ml",
+    "live_configured": false,
+    "time_assumption": "PP1 uses one departure-time matrix snapshot for every arc. This is not a fully time-dependent solver.",
+    "fallback_reasons": [
+      "Local demonstration forced the live adapter to fail; no external request was made."
+    ],
+    "traffic_scenario": "normal",
+    "departure_seconds": 21600,
+    "force_live_failure": true,
+    "matrix_snapshot_id": "7fb24fdd9944b5f3330a5333",
+    "requested_provider": "google",
+    "departure_timestamp": "2026-10-16T06:00:00+05:30",
+    "route_source_counts": {
+      "ml_prediction": 11
+    },
+    "matrix_source_counts": {
+      "ml_prediction": 170
+    },
+    "training_data_source": "synthetic",
+    "has_unavailable_pairs": false,
+    "snapshot_generated_at": "2026-10-16T15:09:04.272907+00:00",
+    "matrix_distance_source": "haversine_straight_line",
+    "matrix_duration_source": "ml_prediction",
+    "route_fallback_reasons": [
+      "Local demonstration forced the live adapter to fail; no external request was made."
+    ],
+    "distance_is_approximate": true,
+    "speed_metres_per_second": 6.0,
+    "scenario_modified_directed_arcs": 0
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "trip_id": "TRIP_a8b7fdb316b440e49e862f21ccbe2a9a",
+  "vehicle_id": "S9D_9f7336fb_V",
+  "notification_id": "NOTICE_156f96db6410414bafa8942c22eafe0b",
+  "missed_student_id": "S9D_9f7336fb_P0",
+  "picked_up_student_id": "S9D_9f7336fb_P2",
+  "cancelled_student_id": "S9D_9f7336fb_P1",
+  "events_for_mixed_window": 1,
+  "events_for_three_missed_students": 3,
+  "delivery_status": "in_app_event_created",
+  "checks": [
+    "real worker expiry event",
+    "one event after repeated/concurrent processing",
+    "PostgreSQL unique constraint enforced",
+    "admin and student-scoped parent inbox",
+    "unrelated/picked/cancelled students receive no missed alert",
+    "mismatched parent read rejected",
+    "independent admin/parent read state",
+    "read state and event survive backend restart",
+    "MISSED/event transaction rollback together"
+  ],
+  "data_source": "isolated synthetic S9D fixtures; no SMS/push delivery or real authentication",
+  "browser": {
+    "notification_id": "NOTICE_1aed3448dc844d5c9473303db33eaca7",
+    "checks": [
+      "Admin persisted inbox",
+      "explicit Parent recipient required",
+      "separate read states",
+      "refresh preserves event/read state",
+      "picked/cancelled/unrelated selectors receive no event",
+      "parent requests always backend-scoped",
+      "visible API error without mock fallback"
+    ],
+    "page_errors": []
+  }
+}

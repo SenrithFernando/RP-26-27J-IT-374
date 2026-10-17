@@ -1,0 +1,31 @@
+{
+  "recorded_at": "2026-10-16T09:18:18.235Z",
+  "vehicle_id": "S4_VAN_A",
+  "first_morning": {
+    "route_id": "ROUTE_aa8546a7ba03414db3fecebe7e8ad7e7",
+    "version": 51
+  },
+  "regenerated_morning": {
+    "route_id": "ROUTE_dc2756787d2f451a91378d9321eb48d3",
+    "version": 52
+  },
+  "afternoon": {
+    "route_id": "ROUTE_82bd182c20c84d448634911e95b73dba",
+    "version": 22
+  },
+  "actions_per_direction": 14,
+  "driver_write_requests": [],
+  "browser_errors": [],
+  "checks": [
+    "Real separate-tab Admin generation and Driver latest-version/stops match",
+    "Morning regeneration received without Driver generation",
+    "Independent afternoon selection",
+    "Manual read-only refresh",
+    "503/404/stale/infeasible/past-date UI fixtures",
+    "Obsolete request ignored",
+    "Hidden polling paused",
+    "Visible polling resumed",
+    "Unmount polling cleanup"
+  ],
+  "source": "Actual local Admin/Driver integration; error states explicitly injected as browser-only fixtures. No Google API calls."
+}

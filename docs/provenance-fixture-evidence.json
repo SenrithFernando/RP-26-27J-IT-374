@@ -1,0 +1,280 @@
+[
+  {
+    "position_id": "POS_0598d0d48fa549a987bbb000c5057d2a",
+    "sample_id": "28",
+    "vehicle_id": "S9B_2f7c7c9e_V",
+    "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+    "source": "actual_device",
+    "vehicle_source": "simulated",
+    "vehicle_prefix_s9b": true,
+    "route_id": "ROUTE_7db1a15deebe4c5b9b2f7e46cadbaafb",
+    "snapshot_student_sources": [
+      "simulated"
+    ],
+    "derived": {
+      "trip_stop_arrivals": [
+        {
+          "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+          "stop_sequence": 2,
+          "event_id": "ARRIVAL_8cb74660169e463f91aaa10dfaa17262",
+          "source": "simulation",
+          "confirming_position_id": "POS_c024f3855bdd49d38757762e0d0a533c"
+        }
+      ],
+      "pickup_windows": [
+        {
+          "id": "WINDOW_fa2c440318634fde8f86ca8b0d281812",
+          "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a"
+        }
+      ],
+      "pickup_outcomes": [
+        {
+          "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+          "stop_sequence": 2,
+          "action_source": "expiry_worker"
+        }
+      ],
+      "pickup_transitions": [
+        {
+          "id": "PICKUP_EVENT_0dcf7d9716a94652ba68b01ccdfb121a",
+          "action_source": "backend_schedule"
+        },
+        {
+          "id": "PICKUP_EVENT_f1c2854eff19449b94cb192700362ee7",
+          "action_source": "backend_schedule"
+        },
+        {
+          "id": "PICKUP_EVENT_b7c67fce01764e9cb90149e805b6e7bb",
+          "action_source": "arrival_simulation"
+        },
+        {
+          "id": "PICKUP_EVENT_58a2a97e131847a5a05196ab76ac0f55",
+          "action_source": "arrival_simulation"
+        },
+        {
+          "id": "PICKUP_EVENT_d298d368d2e943e9908f7068f8327a67",
+          "action_source": "backend_window"
+        },
+        {
+          "id": "PICKUP_EVENT_7777e66483dd488e9661fb534d2c41e0",
+          "action_source": "backend_window"
+        },
+        {
+          "id": "PICKUP_EVENT_80295d8de0764b20acb1590d0117b617",
+          "action_source": "expiry_worker"
+        },
+        {
+          "id": "PICKUP_EVENT_e113a3b8eda748358174ef0d69fbac5b",
+          "action_source": "expiry_worker"
+        }
+      ],
+      "operational_episodes": [],
+      "trip_operational_monitors": [
+        {
+          "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+          "last_source": "simulation"
+        }
+      ],
+      "missed_pickup_notifications": [
+        {
+          "id": "NOTICE_a137f22484a6436cb7620598540ed3d2",
+          "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+          "stop_sequence": 2,
+          "action_source": "expiry_worker",
+          "position_source": "simulation"
+        }
+      ]
+    }
+  },
+  {
+    "position_id": "POS_15af973a191c491bac63480317b0d870",
+    "sample_id": "28",
+    "vehicle_id": "S9B_f3e4eeb3_V",
+    "trip_id": "TRIP_f6efc341bace4b51a2dacf2be7d0fe4d",
+    "source": "actual_device",
+    "vehicle_source": "simulated",
+    "vehicle_prefix_s9b": true,
+    "route_id": "ROUTE_92798fca1f7744febfe5274606284812",
+    "snapshot_student_sources": [
+      "simulated"
+    ],
+    "derived": {
+      "trip_stop_arrivals": [
+        {
+          "trip_id": "TRIP_f6efc341bace4b51a2dacf2be7d0fe4d",
+          "stop_sequence": 2,
+          "event_id": "ARRIVAL_70aaafe6241a4821995d8870020822f1",
+          "source": "simulation",
+          "confirming_position_id": "POS_cb94ace9625841808e37305d981c1f10"
+        },
+        {
+          "trip_id": "TRIP_f6efc341bace4b51a2dacf2be7d0fe4d",
+          "stop_sequence": 3,
+          "event_id": "ARRIVAL_28f90ba8d1fe4124b9f974b29f6a7677",
+          "source": "simulation",
+          "confirming_position_id": "POS_7a8a8c795265418eb64e39fe00d55ac4"
+        }
+      ],
+      "pickup_windows": [],
+      "pickup_outcomes": [],
+      "pickup_transitions": [],
+      "operational_episodes": [],
+      "trip_operational_monitors": [],
+      "missed_pickup_notifications": []
+    }
+  },
+  {
+    "position_id": "POS_7ec5c3c5c5e34de7ae1a4c955107904a",
+    "sample_id": "28",
+    "vehicle_id": "S9B_6e6d0daf_V",
+    "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab",
+    "source": "actual_device",
+    "vehicle_source": "simulated",
+    "vehicle_prefix_s9b": true,
+    "route_id": "ROUTE_73e7be8fdfbc45f29d38509b68489528",
+    "snapshot_student_sources": [
+      "simulated"
+    ],
+    "derived": {
+      "trip_stop_arrivals": [
+        {
+          "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab",
+          "stop_sequence": 2,
+          "event_id": "ARRIVAL_2fcb9ce7772b4f7eb2857f698679f2c5",
+          "source": "simulation",
+          "confirming_position_id": "POS_27d884944cb349d99151405066830921"
+        }
+      ],
+      "pickup_windows": [
+        {
+          "id": "WINDOW_952dccfdf06141a191003dc3ea75087c",
+          "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab"
+        }
+      ],
+      "pickup_outcomes": [
+        {
+          "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab",
+          "stop_sequence": 2,
+          "action_source": "expiry_worker"
+        }
+      ],
+      "pickup_transitions": [
+        {
+          "id": "PICKUP_EVENT_080c0162e1df4309a4a8bc38417b3168",
+          "action_source": "backend_schedule"
+        },
+        {
+          "id": "PICKUP_EVENT_f3641e648c4f48efb013f490f9811d26",
+          "action_source": "backend_schedule"
+        },
+        {
+          "id": "PICKUP_EVENT_115e18e858e74ceb90aea2f82fe61896",
+          "action_source": "arrival_simulation"
+        },
+        {
+          "id": "PICKUP_EVENT_ff3b935f6d37431e82809f04486a3a6a",
+          "action_source": "arrival_simulation"
+        },
+        {
+          "id": "PICKUP_EVENT_99afc69f100a48c4ba1b0f5f1afc3f02",
+          "action_source": "backend_window"
+        },
+        {
+          "id": "PICKUP_EVENT_dc9cd937403a40dfb40ea90581b458aa",
+          "action_source": "backend_window"
+        },
+        {
+          "id": "PICKUP_EVENT_6fb98c8032494d2c8d47ae877a14cfe9",
+          "action_source": "expiry_worker"
+        },
+        {
+          "id": "PICKUP_EVENT_342421265dfd4b5486cbd1a0c3fed762",
+          "action_source": "expiry_worker"
+        }
+      ],
+      "operational_episodes": [],
+      "trip_operational_monitors": [
+        {
+          "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab",
+          "last_source": "simulation"
+        }
+      ],
+      "missed_pickup_notifications": [
+        {
+          "id": "NOTICE_a89ba79d5041410db068e64140fa19c3",
+          "trip_id": "TRIP_c6610cb20bba448688c7a191d86fa7ab",
+          "stop_sequence": 2,
+          "action_source": "expiry_worker",
+          "position_source": "simulation"
+        }
+      ]
+    }
+  },
+  {
+    "position_id": "POS_8a56cdcdd4b847e28b37e24515559d64",
+    "sample_id": "28",
+    "vehicle_id": "S9B_1a9c1ecc_V",
+    "trip_id": "TRIP_1bb65e3dec2742a1aef3f92b61992ca0",
+    "source": "actual_device",
+    "vehicle_source": "simulated",
+    "vehicle_prefix_s9b": true,
+    "route_id": "ROUTE_8ae507df1b6c436fb82af7dc2ee89e80",
+    "snapshot_student_sources": [
+      "simulated"
+    ],
+    "derived": {
+      "trip_stop_arrivals": [
+        {
+          "trip_id": "TRIP_1bb65e3dec2742a1aef3f92b61992ca0",
+          "stop_sequence": 2,
+          "event_id": "ARRIVAL_fa7114bc709544458f3da979dc9871e3",
+          "source": "simulation",
+          "confirming_position_id": "POS_49d584f7fb60464590c5625832205bf1"
+        },
+        {
+          "trip_id": "TRIP_1bb65e3dec2742a1aef3f92b61992ca0",
+          "stop_sequence": 3,
+          "event_id": "ARRIVAL_300d3c3799244f9ab4aecd9647a9341a",
+          "source": "simulation",
+          "confirming_position_id": "POS_31cbf83fe15345cdb86831565cefb7ae"
+        }
+      ],
+      "pickup_windows": [],
+      "pickup_outcomes": [],
+      "pickup_transitions": [],
+      "operational_episodes": [],
+      "trip_operational_monitors": [],
+      "missed_pickup_notifications": []
+    }
+  },
+  {
+    "position_id": "POS_d0bb16045b2a4e369de95ae207e80303",
+    "sample_id": "28",
+    "vehicle_id": "S9B_d81201ac_V",
+    "trip_id": "TRIP_eefe77aa7cf04f9aae6a7d0bfd90c21c",
+    "source": "actual_device",
+    "vehicle_source": "simulated",
+    "vehicle_prefix_s9b": true,
+    "route_id": "ROUTE_bd114e94a9bf4e40b0caa6db01bb75d7",
+    "snapshot_student_sources": [
+      "simulated"
+    ],
+    "derived": {
+      "trip_stop_arrivals": [
+        {
+          "trip_id": "TRIP_eefe77aa7cf04f9aae6a7d0bfd90c21c",
+          "stop_sequence": 2,
+          "event_id": "ARRIVAL_b9015f502ca54e3291bcaf7e2e4e4b1f",
+          "source": "simulation",
+          "confirming_position_id": "POS_f85e45cbd23c4b92bff47ce53035a023"
+        }
+      ],
+      "pickup_windows": [],
+      "pickup_outcomes": [],
+      "pickup_transitions": [],
+      "operational_episodes": [],
+      "trip_operational_monitors": [],
+      "missed_pickup_notifications": []
+    }
+  }
+]

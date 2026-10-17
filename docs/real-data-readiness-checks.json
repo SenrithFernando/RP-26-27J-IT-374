@@ -1,0 +1,10 @@
+{
+  "tests_run": 43,
+  "passed": 35,
+  "skipped_db_tests": 8,
+  "failures": 0,
+  "errors": 0,
+  "network": "socket connections blocked",
+  "database_tests": "disabled to avoid modifying existing trips",
+  "retrained": false
+}

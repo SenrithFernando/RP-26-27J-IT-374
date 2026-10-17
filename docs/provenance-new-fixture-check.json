@@ -1,0 +1,12 @@
+{
+  "trip_id": "TRIP_31c6568dd3304894b3a847c0521ad57e",
+  "vehicle_id": "S9B_8010bdf1_V",
+  "position_count": 17,
+  "all_positions_simulation": true,
+  "registered_fixture": true,
+  "current_source_counts": {
+    "simulation": 681
+  },
+  "training_csv_checksum_unchanged": true,
+  "model_artifact_checksums_valid": true
+}

@@ -1,0 +1,56 @@
+{
+  "applied": true,
+  "reviewed_positions": 5,
+  "changes": [
+    {
+      "table": "vehicle_positions",
+      "key": "POS_0598d0d48fa549a987bbb000c5057d2a",
+      "field": "source",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation"
+    },
+    {
+      "table": "vehicle_positions",
+      "key": "POS_15af973a191c491bac63480317b0d870",
+      "field": "source",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation"
+    },
+    {
+      "table": "vehicle_positions",
+      "key": "POS_7ec5c3c5c5e34de7ae1a4c955107904a",
+      "field": "source",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation"
+    },
+    {
+      "table": "vehicle_positions",
+      "key": "POS_8a56cdcdd4b847e28b37e24515559d64",
+      "field": "source",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation"
+    },
+    {
+      "table": "vehicle_positions",
+      "key": "POS_d0bb16045b2a4e369de95ae207e80303",
+      "field": "source",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation"
+    }
+  ],
+  "corrected_counts": {
+    "vehicle_positions": 5
+  },
+  "derived_records_checked": {
+    "trip_stop_arrivals": 7,
+    "pickup_windows": 2,
+    "pickup_outcomes": 2,
+    "pickup_transitions": 16,
+    "operational_episodes": 0,
+    "trip_operational_monitors": 2,
+    "missed_pickup_notifications": 2
+  },
+  "observation_store": "No measured segment-observation table/dataset exists; measured lineage gate added separately.",
+  "events_replayed": 0,
+  "records_deleted": 0
+}

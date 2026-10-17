@@ -1,0 +1,34 @@
+{
+  "vehicle_id": "S9A_27c03b73ba",
+  "stored_samples": 3,
+  "duplicate_samples_inserted": 0,
+  "latest_sample": "fresh",
+  "checks": [
+    "unknown/stale/fresh status",
+    "duplicate identity and timestamp alias deduplicated",
+    "out-of-order retained without latest rollback",
+    "conflicting duplicate rejected",
+    "future and invalid inputs rejected",
+    "bounded history",
+    "aware timestamps",
+    "backend restart persistence"
+  ],
+  "arrival_detection": "not exercised by this unassociated vehicle-only fixture; see test_arrivals.py",
+  "actual_device_verification": "not performed",
+  "browser": {
+    "vehicle_id": "S8B_20d527ae_V",
+    "trip_id": "TRIP_87b9bb52f02c47b3b2d3115d4deb2479",
+    "direction": "afternoon",
+    "replay_samples": 31,
+    "source": "simulation",
+    "movement": "synthetic stop sequence, not a driven road trace",
+    "checks": [
+      "real replay script ingestion",
+      "backend marker moved",
+      "manual zoom preserved",
+      "unrelated vehicle unchanged",
+      "unmount stops polling"
+    ],
+    "page_errors": []
+  }
+}

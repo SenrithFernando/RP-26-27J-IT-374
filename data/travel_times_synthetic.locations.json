@@ -1,0 +1,134 @@
+[
+  {
+    "id": "HOME_47a341cf05894222bdad2f8be517aa32",
+    "latitude": 6.9265121,
+    "longitude": 79.862237,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_01",
+    "latitude": 6.921250000000001,
+    "longitude": 79.8513,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_02",
+    "latitude": 6.9215,
+    "longitude": 79.8516,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_03",
+    "latitude": 6.92175,
+    "longitude": 79.8519,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_04",
+    "latitude": 6.922000000000001,
+    "longitude": 79.8522,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_05",
+    "latitude": 6.92225,
+    "longitude": 79.85249999999999,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_06",
+    "latitude": 6.9225,
+    "longitude": 79.8528,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_07",
+    "latitude": 6.922750000000001,
+    "longitude": 79.8531,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_08",
+    "latitude": 6.923,
+    "longitude": 79.8534,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_09",
+    "latitude": 6.92325,
+    "longitude": 79.8537,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_10",
+    "latitude": 6.923500000000001,
+    "longitude": 79.854,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_11",
+    "latitude": 6.92375,
+    "longitude": 79.8543,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_HOME_12",
+    "latitude": 6.924,
+    "longitude": 79.8546,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_SCHOOL_A",
+    "latitude": 6.93,
+    "longitude": 79.86,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_SCHOOL_B",
+    "latitude": 6.94,
+    "longitude": 79.87,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_VAN_A:end",
+    "latitude": 6.92,
+    "longitude": 79.851,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_VAN_A:start",
+    "latitude": 6.919,
+    "longitude": 79.85,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_VAN_B:end",
+    "latitude": 6.922,
+    "longitude": 79.851,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "S4_VAN_B:start",
+    "latitude": 6.920999999999999,
+    "longitude": 79.85,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "SCHOOL_STAGE3_TEST",
+    "latitude": 6.935,
+    "longitude": 79.875,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "VAN_STAGE2_TEST:end",
+    "latitude": 6.94,
+    "longitude": 79.88,
+    "location_input_source": "simulated"
+  },
+  {
+    "id": "VAN_STAGE2_TEST:start",
+    "latitude": 6.92,
+    "longitude": 79.85,
+    "location_input_source": "simulated"
+  }
+]

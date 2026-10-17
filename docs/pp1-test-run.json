@@ -1,0 +1,6 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 92.622,
+  "command": "python -m unittest discover -s tests -v",
+  "database_tests_enabled": true
+}

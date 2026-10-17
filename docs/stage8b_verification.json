@@ -1,0 +1,23 @@
+{
+  "vehicle_id": "S8B_5a737b81_V",
+  "route_id": "ROUTE_0964c5356fb0446ea5d3d54d894c78ae",
+  "direction": "afternoon",
+  "completed_trip_id": "TRIP_2eb97302b3474da783409781700b9837",
+  "cancelled_trip_id": "TRIP_7248757b252644868407efe6057be015",
+  "checks": [
+    "planned-active-completed",
+    "planned-cancelled",
+    "active-cancelled",
+    "concurrent cross-direction duplicate start rejected",
+    "PostgreSQL active-vehicle unique index enforced",
+    "idempotent create/start/end",
+    "separate DB session and backend process restart persistence",
+    "active route regeneration blocked",
+    "roster edit does not replace trip snapshot",
+    "unfinished actions retained after end",
+    "stale/infeasible/past-date plans rejected",
+    "terminal trips cannot reopen",
+    "legacy lock bypass rejected"
+  ],
+  "data_source": "isolated synthetic Stage 8B fixtures; deterministic simulation routing; no external provider calls"
+}

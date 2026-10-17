@@ -1,0 +1,9 @@
+SIMULATION ONLY / S9E_8001ca6f_V / TRIP_89508b36caf34333bde6152737df6976 / 8 samples. Synthetic movement, not a driven road trace.
+Press Enter to start; Ctrl+C stops without ending or changing the trip. 1/8 simulation / duplicate=False / advances_latest=True
+2/8 simulation / duplicate=False / advances_latest=True
+3/8 simulation / duplicate=False / advances_latest=True
+4/8 simulation / duplicate=False / advances_latest=True
+5/8 simulation / duplicate=False / advances_latest=True
+6/8 simulation / duplicate=False / advances_latest=True
+7/8 simulation / duplicate=False / advances_latest=True
+8/8 simulation / duplicate=False / advances_latest=True

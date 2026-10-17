@@ -1,0 +1,9 @@
+recorded_at,latitude,longitude,speed_mps,source,description
+2026-10-16T15:02:10.763398+00:00,6.919776617109133,79.91977661710914,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:12.763398+00:00,6.919840440792238,79.91984044079224,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:14.763398+00:00,6.919904264475343,79.91990426447535,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:16.763398+00:00,6.9199680881584476,79.91996808815846,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:18.763398+00:00,6.920031911841553,79.92003191184155,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:20.763398+00:00,6.920095735524658,79.92009573552465,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:22.763398+00:00,6.920159559207763,79.92015955920776,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace
+2026-10-16T15:02:24.763398+00:00,6.9202233828908675,79.92022338289087,,simulation,Synthetic normal_travel; approximate_stop_sequence; not a driven road trace

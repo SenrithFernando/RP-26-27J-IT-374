@@ -1,0 +1,94 @@
+{
+  "prefix": "PP1_DEMO_0c1effd6",
+  "vehicle_id": "PP1_DEMO_0c1effd6_VAN_A",
+  "routes": [
+    {
+      "route_id": "ROUTE_4dcdd31919d141efb6b58beb6cad2b8c",
+      "version": 1,
+      "direction": "morning",
+      "provider_source": {
+        "provider": "xgboost_synthetic_v1",
+        "warnings": [
+          "Unknown segment: model uses available numeric/known ID features; baseline uses training-only global mean.",
+          "Weather input missing: explicit unknown encoding used; no weather forecast was fetched."
+        ],
+        "direction": "morning",
+        "description": "This demonstrates a synthetic-data ML pipeline. Real-world accuracy has not yet been established.",
+        "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+        "route_is_mixed": false,
+        "distance_source": "haversine_straight_line",
+        "duration_source": "ml_prediction",
+        "fallback_policy": "ml",
+        "live_configured": false,
+        "time_assumption": "PP1 uses one departure-time matrix snapshot for every arc. This is not a fully time-dependent solver.",
+        "fallback_reasons": [],
+        "traffic_scenario": "normal",
+        "departure_seconds": 21600,
+        "force_live_failure": false,
+        "matrix_snapshot_id": "d0edd831583e9dbe10be7506",
+        "requested_provider": "ml",
+        "departure_timestamp": "2026-10-16T06:00:00+05:30",
+        "route_source_counts": {
+          "ml_prediction": 11
+        },
+        "matrix_source_counts": {
+          "ml_prediction": 170
+        },
+        "training_data_source": "synthetic",
+        "has_unavailable_pairs": false,
+        "snapshot_generated_at": "2026-10-16T14:58:01.029982+00:00",
+        "matrix_distance_source": "haversine_straight_line",
+        "matrix_duration_source": "ml_prediction",
+        "route_fallback_reasons": [],
+        "distance_is_approximate": true,
+        "speed_metres_per_second": 6.0,
+        "scenario_modified_directed_arcs": 0
+      },
+      "driving_seconds": 2631
+    },
+    {
+      "route_id": "ROUTE_e0700605738e42a3bd6f2bb2946e770c",
+      "version": 1,
+      "direction": "afternoon",
+      "provider_source": {
+        "provider": "xgboost_synthetic_v1",
+        "warnings": [
+          "Unknown segment: model uses available numeric/known ID features; baseline uses training-only global mean.",
+          "Weather input missing: explicit unknown encoding used; no weather forecast was fetched."
+        ],
+        "direction": "afternoon",
+        "description": "This demonstrates a synthetic-data ML pipeline. Real-world accuracy has not yet been established.",
+        "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+        "route_is_mixed": false,
+        "distance_source": "haversine_straight_line",
+        "duration_source": "ml_prediction",
+        "fallback_policy": "ml",
+        "live_configured": false,
+        "time_assumption": "PP1 uses one departure-time matrix snapshot for every arc. This is not a fully time-dependent solver.",
+        "fallback_reasons": [],
+        "traffic_scenario": "normal",
+        "departure_seconds": 45000,
+        "force_live_failure": false,
+        "matrix_snapshot_id": "225bf3d618f7a4e71200d16b",
+        "requested_provider": "ml",
+        "departure_timestamp": "2026-10-16T12:30:00+05:30",
+        "route_source_counts": {
+          "ml_prediction": 11
+        },
+        "matrix_source_counts": {
+          "ml_prediction": 170
+        },
+        "training_data_source": "synthetic",
+        "has_unavailable_pairs": false,
+        "snapshot_generated_at": "2026-10-16T14:58:02.118100+00:00",
+        "matrix_distance_source": "haversine_straight_line",
+        "matrix_duration_source": "ml_prediction",
+        "route_fallback_reasons": [],
+        "distance_is_approximate": true,
+        "speed_metres_per_second": 5.0,
+        "scenario_modified_directed_arcs": 0
+      },
+      "driving_seconds": 2319
+    }
+  ]
+}

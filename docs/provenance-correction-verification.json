@@ -1,0 +1,78 @@
+{
+  "corrections": [
+    {
+      "position_id": "POS_0598d0d48fa549a987bbb000c5057d2a",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation",
+      "corrected_at": "2026-10-17T21:44:56.472288+05:30",
+      "reason": "Controlled-clock Stage 9B generated sample 28 tested source changes; no physical device observation."
+    },
+    {
+      "position_id": "POS_15af973a191c491bac63480317b0d870",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation",
+      "corrected_at": "2026-10-17T21:44:56.502623+05:30",
+      "reason": "Controlled-clock Stage 9B generated sample 28 tested source changes; no physical device observation."
+    },
+    {
+      "position_id": "POS_7ec5c3c5c5e34de7ae1a4c955107904a",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation",
+      "corrected_at": "2026-10-17T21:44:56.512274+05:30",
+      "reason": "Controlled-clock Stage 9B generated sample 28 tested source changes; no physical device observation."
+    },
+    {
+      "position_id": "POS_8a56cdcdd4b847e28b37e24515559d64",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation",
+      "corrected_at": "2026-10-17T21:44:56.520982+05:30",
+      "reason": "Controlled-clock Stage 9B generated sample 28 tested source changes; no physical device observation."
+    },
+    {
+      "position_id": "POS_d0bb16045b2a4e369de95ae207e80303",
+      "previous_source": "actual_device",
+      "corrected_source": "simulation",
+      "corrected_at": "2026-10-17T21:44:56.529552+05:30",
+      "reason": "Controlled-clock Stage 9B generated sample 28 tested source changes; no physical device observation."
+    }
+  ],
+  "before_counts": {
+    "vehicle_positions": 664,
+    "trips": 74,
+    "trip_stop_arrivals": 46,
+    "pickup_windows": 70,
+    "pickup_outcomes": 138,
+    "pickup_transitions": 683,
+    "operational_episodes": 12,
+    "trip_operational_monitors": 29,
+    "missed_pickup_notifications": 45
+  },
+  "after_counts": {
+    "vehicle_positions": 664,
+    "trips": 74,
+    "trip_stop_arrivals": 46,
+    "pickup_windows": 70,
+    "pickup_outcomes": 138,
+    "pickup_transitions": 683,
+    "operational_episodes": 12,
+    "trip_operational_monitors": 29,
+    "missed_pickup_notifications": 45
+  },
+  "expected_content_matches": {
+    "vehicle_positions": true,
+    "trips": true,
+    "trip_stop_arrivals": true,
+    "pickup_windows": true,
+    "pickup_outcomes": true,
+    "pickup_transitions": true,
+    "operational_episodes": true,
+    "trip_operational_monitors": true,
+    "missed_pickup_notifications": true
+  },
+  "repeat_run_changes": 0,
+  "audit_append_only_verified": true,
+  "measured_export_and_metrics_rejected_fixture": true,
+  "position_source_counts": {
+    "simulation": 664
+  }
+}

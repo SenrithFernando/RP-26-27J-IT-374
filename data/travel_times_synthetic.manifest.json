@@ -1,0 +1,12 @@
+{
+  "seed": 20261015,
+  "rows": 2000,
+  "trips": 400,
+  "weeks": 8,
+  "data_source": "synthetic",
+  "disclaimer": "This demonstrates a synthetic-data ML pipeline. Real-world accuracy has not yet been established.",
+  "location_count": 22,
+  "csv_sha256": "e34925aad5b34d5d51c6f632a64b2a09d7ee4bfca057e8a789c9f43061a1814a",
+  "distance_source": "haversine_straight_line",
+  "target_recipe": "Nonlinear morning/afternoon peaks, stable directed-segment effect, weekday and weather interactions, lognormal noise; synthetic targets, never measured times."
+}

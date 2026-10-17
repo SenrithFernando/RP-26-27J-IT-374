@@ -1,0 +1,333 @@
+{
+  "audit_date": "2026-10-17",
+  "trip_records_modified": false,
+  "training_performed": false,
+  "migration_head": "0012_operational_episodes",
+  "source_counts": {
+    "schools": [
+      {
+        "source": "simulated",
+        "count": 83
+      }
+    ],
+    "vehicles": [
+      {
+        "source": "simulated",
+        "count": 88
+      }
+    ],
+    "students": [
+      {
+        "source": "simulated",
+        "count": 192
+      }
+    ],
+    "vehicle_positions": [
+      {
+        "source": "actual_device",
+        "count": 5
+      },
+      {
+        "source": "simulation",
+        "count": 659
+      }
+    ]
+  },
+  "tables": [
+    "alembic_version",
+    "missed_pickup_notifications",
+    "operational_episodes",
+    "pickup_outcomes",
+    "pickup_transitions",
+    "pickup_windows",
+    "route_plan_states",
+    "route_stops",
+    "route_versions",
+    "routing_events",
+    "schools",
+    "students",
+    "trip_operational_monitors",
+    "trip_stop_arrivals",
+    "trips",
+    "vehicle_positions",
+    "vehicles"
+  ],
+  "configuration": {
+    "backend_env_exists": true,
+    "google_routes_configured": false,
+    "google_static_maps_configured": false,
+    "traffic_timeout_seconds": 4.0
+  },
+  "model": {
+    "available": true,
+    "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+    "training_data_source": "synthetic",
+    "reason": null
+  },
+  "final_test_recomputed": {
+    "samples": 500,
+    "xgboost": {
+      "mae_seconds": 28.012511859487336,
+      "mae_minutes": 0.4668751976581223,
+      "rmse_seconds": 49.89851705630116,
+      "rmse_minutes": 0.8316419509383527
+    },
+    "baseline": {
+      "mae_seconds": 57.08666959838096,
+      "mae_minutes": 0.9514444933063493,
+      "rmse_seconds": 111.90390381547041,
+      "rmse_minutes": 1.8650650635911736
+    }
+  },
+  "openapi_security_schemes": {},
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/routing/health",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/schools",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/vehicles",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/students",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/routing/students",
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/routing/students/{student_id}",
+      "security": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/routing/students/{student_id}",
+      "security": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/routing/students/{student_id}/status",
+      "security": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/routing/students/{student_id}/vehicle",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/routing/geocode",
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/routing/schools/{school_id}/location",
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/routing/vehicles/{vehicle_id}/locations/{position}",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/map-locations/{vehicle_id}",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/traffic/status",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/routes/generate",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routes/latest",
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/routing/schools/{school_id}/schedule",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/events/{event_id}",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/routing/events/{event_id}/retry",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/plans/{vehicle_id}/{direction}",
+      "security": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/routes/{route_id}/planning-lock",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/ml/status",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/ml/predict",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routes/{route_id}/map-image",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/current",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/{trip_id}",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/start",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/complete",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/cancel",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/routing/vehicles/{vehicle_id}/positions",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/vehicles/{vehicle_id}/positions",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/vehicles/{vehicle_id}/positions/latest",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/{trip_id}/arrival",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/advance-stop",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/pickup-policy",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/{trip_id}/pickup-windows",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/pickups/{student_id}/confirm",
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/trips/{trip_id}/pickups/{student_id}/cancel",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/{trip_id}/pickup-history",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routing/notifications",
+      "security": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/routing/notifications/{notification_id}/read",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/trips/{trip_id}/operational-events",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/pickup-worker/status",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/students",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/vehicle",
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/routes/{direction}",
+      "security": []
+    }
+  ],
+  "training_csv_checksum_matches_metrics": true,
+  "actual_device_tag_evidence": "All five source=actual_device rows belong to S9B synthetic fixture vehicles; caller-provided tag is not proof of actual phone measurements.",
+  "saved_final_metrics_match_recomputation": true
+}

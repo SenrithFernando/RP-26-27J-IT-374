@@ -1,0 +1,34 @@
+{
+  "replay_trip_id": "TRIP_6ad6b273e03b4cdabf976c43c083f390",
+  "replay_route_id": "ROUTE_18bbc5ed189a4215873063de0f98fcd5",
+  "vehicle_id": "S9E_22abe42a_V",
+  "trip_id": "TRIP_dd4cfa50b07347bdb108078da49db3e6",
+  "route_id": "ROUTE_7182be65ef8041f296713ce3cdf89ec4",
+  "geometry_quality": "approximate_stop_sequence",
+  "deviation_episodes": 2,
+  "unexpected_stop_episodes": 1,
+  "replay_scenarios": {
+    "normal_travel": 8,
+    "sustained_deviation": 13,
+    "recovery": 21,
+    "expected_waiting": 33,
+    "unexpected_stop": 33,
+    "gps_loss": 16
+  },
+  "checks": [
+    "point-to-polyline metres",
+    "provider geometry validation/fallback",
+    "normal travel despite reported zero speed",
+    "sustained deviation and recovery",
+    "duplicate/late samples ignored",
+    "one alert per active episode",
+    "unexpected stop from ordered low-movement history",
+    "expected pickup/known waiting excluded",
+    "GPS loss neither stop nor recovery",
+    "gap interrupts candidates",
+    "PostgreSQL active episode uniqueness",
+    "new DB session persistence",
+    "trip closure distinct from GPS recovery"
+  ],
+  "data_source": "synthetic controlled-clock observations; no live Google calls or accuracy/precision/recall validation"
+}

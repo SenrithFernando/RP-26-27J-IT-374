@@ -1,0 +1,55 @@
+{
+  "trip_id": "TRIP_9795e522403e4243b3b0b05d467beea9",
+  "vehicle_id": "S9C_ab135551_V",
+  "shared_windows": 1,
+  "individual_students": 3,
+  "outcomes": [
+    "PICKED_UP",
+    "CANCELLED",
+    "MISSED"
+  ],
+  "production_seconds": 900,
+  "test_demo_seconds": 5,
+  "checks": [
+    "arrival-only start",
+    "refresh and duplicate arrival preserve deadline",
+    "shared-school grouping",
+    "per-stop alternative",
+    "manual confirmation idempotent",
+    "expiry without browser",
+    "restart overdue recovery",
+    "repeat worker processing idempotent",
+    "strict before/exact deadline boundary",
+    "confirmation/expiry race",
+    "individual mixed outcomes/history retained",
+    "deliveries remain unconfirmed",
+    "optimizer waiting unchanged",
+    "demo device samples rejected"
+  ],
+  "data_source": "isolated synthetic fixtures; controlled deadline boundary tests; real background worker and process restart",
+  "browser": {
+    "trip_id": "TRIP_a599879254804ae78b1d3409a5ee699e",
+    "vehicle_id": "S9C_52e604ff_V",
+    "route_id": "ROUTE_0cd6f420466d4a99ada61b106cad380a",
+    "mode": "simulation_demo",
+    "duration_seconds": 30,
+    "deadline_at": "2026-10-16T19:02:09.824000+05:30",
+    "outcomes": [
+      "PICKED_UP",
+      "CANCELLED",
+      "MISSED"
+    ],
+    "checks": [
+      "explicit demo/scope selection",
+      "real GPS arrival opens one shared window",
+      "visible API save error and retry",
+      "manual pickup/cancel actions",
+      "browser closed during worker expiry",
+      "reconnect retains deadline and outcomes",
+      "invalid confirmation disabled",
+      "deliveries stay pending",
+      "all six states in ordered history"
+    ],
+    "page_errors": []
+  }
+}

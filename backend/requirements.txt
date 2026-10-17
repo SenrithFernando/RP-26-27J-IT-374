@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+ortools
+SQLAlchemy>=2.0,<2.1
+psycopg[binary]>=3.2,<4
+alembic>=1.14,<2
+python-dotenv>=1,<2
+xgboost>=3.4,<3.5
+numpy>=2,<3
+scikit-learn>=1.9,<2

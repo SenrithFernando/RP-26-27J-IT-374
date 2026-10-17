@@ -1,0 +1,32 @@
+{
+  "vehicle_id": "S9E_22abe42a_V",
+  "trip_id": "TRIP_6ad6b273e03b4cdabf976c43c083f390",
+  "route_id": "ROUTE_18bbc5ed189a4215873063de0f98fcd5",
+  "geometry_quality": "approximate_stop_sequence",
+  "geometry_source": "stop_sequence",
+  "settings": {
+    "stop_seconds": 60,
+    "max_gap_seconds": 10,
+    "low_movement_mps": 0.5,
+    "min_observations": 3,
+    "recovery_seconds": 10,
+    "deviation_seconds": 20,
+    "freshness_seconds": 20,
+    "stop_radius_metres": 15,
+    "stop_recovery_metres": 30,
+    "road_deviation_metres": 100,
+    "deviation_recovery_metres": 180.0,
+    "selected_deviation_metres": 300,
+    "sequence_deviation_metres": 300,
+    "expected_dwell_radius_metres": 75
+  },
+  "scenarios": {
+    "normal_travel": 8,
+    "sustained_deviation": 13,
+    "recovery": 21,
+    "expected_waiting": 33,
+    "unexpected_stop": 33,
+    "gps_loss": 16
+  },
+  "note": "Every row is simulation. Movement/stop scenarios are operational demonstrations, not validated accuracy or crash diagnoses. Sustained deviation may also trigger a low-movement event if stationary long enough; both are independent operational episodes."
+}

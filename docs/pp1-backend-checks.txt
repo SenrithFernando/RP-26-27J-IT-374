@@ -1,0 +1,280 @@
+{
+  "vehicle_id": "S9B_2f7c7c9e_V",
+  "trip_id": "TRIP_6bb8dfb3a4f74959968488eff644c42a",
+  "route_id": "ROUTE_7db1a15deebe4c5b9b2f7e46cadbaafb",
+  "current_stop_sequence": 3,
+  "event_id": "ARRIVAL_8cb74660169e463f91aaa10dfaa17262",
+  "arrival_events": 1,
+  "unfinished_actions": 2,
+  "checks": [
+    "radius boundary/hysteresis",
+    "future stops ignored",
+    "duplicate/out-of-order ignored",
+    "GPS gaps reset dwell",
+    "stale samples ignored",
+    "source changes reset dwell",
+    "dwell and minimum observations both required",
+    "one immutable arrival event",
+    "unknown GPS differs from outside",
+    "event survives new DB session",
+    "explicit next stop preserves passenger actions",
+    "duplicate advance rejected"
+  ],
+  "data_source": "synthetic fixtures and controlled GPS timestamps; actual hardware not verified",
+  "browser": {
+    "trip_id": "TRIP_1bb65e3dec2742a1aef3f92b61992ca0",
+    "stop_sequence": 3,
+    "event_id": "ARRIVAL_300d3c3799244f9ab4aecd9647a9341a",
+    "arrived_at": "2026-10-16T18:48:17.525000+05:30",
+    "source": "simulation",
+    "first_inside_at": "2026-10-16T13:17:59.613Z",
+    "next_stop_sequence": 4,
+    "checks": [
+      "GPS unknown -> approaching -> candidate -> arrived",
+      "real repeated recorded-time observations",
+      "duplicate arrival unchanged",
+      "passenger actions unchanged",
+      "manual next stop starts GPS unknown, including colocated stop"
+    ],
+    "page_errors": []
+  }
+}
+Stage 5 verified synthetic fixtures: S5_db7b0c89e5_V0, S5_db7b0c89e5_V1 student STU_5ca62f90927e4382939fd654b4bba8c3
+{
+  "trip_id": "TRIP_a8b7fdb316b440e49e862f21ccbe2a9a",
+  "vehicle_id": "S9D_9f7336fb_V",
+  "notification_id": "NOTICE_156f96db6410414bafa8942c22eafe0b",
+  "missed_student_id": "S9D_9f7336fb_P0",
+  "picked_up_student_id": "S9D_9f7336fb_P2",
+  "cancelled_student_id": "S9D_9f7336fb_P1",
+  "events_for_mixed_window": 1,
+  "events_for_three_missed_students": 3,
+  "delivery_status": "in_app_event_created",
+  "checks": [
+    "real worker expiry event",
+    "one event after repeated/concurrent processing",
+    "PostgreSQL unique constraint enforced",
+    "admin and student-scoped parent inbox",
+    "unrelated/picked/cancelled students receive no missed alert",
+    "mismatched parent read rejected",
+    "independent admin/parent read state",
+    "read state and event survive backend restart",
+    "MISSED/event transaction rollback together"
+  ],
+  "data_source": "isolated synthetic S9D fixtures; no SMS/push delivery or real authentication",
+  "browser": {
+    "notification_id": "NOTICE_1aed3448dc844d5c9473303db33eaca7",
+    "checks": [
+      "Admin persisted inbox",
+      "explicit Parent recipient required",
+      "separate read states",
+      "refresh preserves event/read state",
+      "picked/cancelled/unrelated selectors receive no event",
+      "parent requests always backend-scoped",
+      "visible API error without mock fallback"
+    ],
+    "page_errors": []
+  }
+}
+{
+  "replay_trip_id": "TRIP_6ad6b273e03b4cdabf976c43c083f390",
+  "replay_route_id": "ROUTE_18bbc5ed189a4215873063de0f98fcd5",
+  "vehicle_id": "S9E_22abe42a_V",
+  "trip_id": "TRIP_dd4cfa50b07347bdb108078da49db3e6",
+  "route_id": "ROUTE_7182be65ef8041f296713ce3cdf89ec4",
+  "geometry_quality": "approximate_stop_sequence",
+  "deviation_episodes": 2,
+  "unexpected_stop_episodes": 1,
+  "replay_scenarios": {
+    "normal_travel": 8,
+    "sustained_deviation": 13,
+    "recovery": 21,
+    "expected_waiting": 33,
+    "unexpected_stop": 33,
+    "gps_loss": 16
+  },
+  "checks": [
+    "point-to-polyline metres",
+    "provider geometry validation/fallback",
+    "normal travel despite reported zero speed",
+    "sustained deviation and recovery",
+    "duplicate/late samples ignored",
+    "one alert per active episode",
+    "unexpected stop from ordered low-movement history",
+    "expected pickup/known waiting excluded",
+    "GPS loss neither stop nor recovery",
+    "gap interrupts candidates",
+    "PostgreSQL active episode uniqueness",
+    "new DB session persistence",
+    "trip closure distinct from GPS recovery"
+  ],
+  "data_source": "synthetic controlled-clock observations; no live Google calls or accuracy/precision/recall validation"
+}
+{
+  "trip_id": "TRIP_9795e522403e4243b3b0b05d467beea9",
+  "vehicle_id": "S9C_ab135551_V",
+  "shared_windows": 1,
+  "individual_students": 3,
+  "outcomes": [
+    "PICKED_UP",
+    "CANCELLED",
+    "MISSED"
+  ],
+  "production_seconds": 900,
+  "test_demo_seconds": 5,
+  "checks": [
+    "arrival-only start",
+    "refresh and duplicate arrival preserve deadline",
+    "shared-school grouping",
+    "per-stop alternative",
+    "manual confirmation idempotent",
+    "expiry without browser",
+    "restart overdue recovery",
+    "repeat worker processing idempotent",
+    "strict before/exact deadline boundary",
+    "confirmation/expiry race",
+    "individual mixed outcomes/history retained",
+    "deliveries remain unconfirmed",
+    "optimizer waiting unchanged",
+    "demo device samples rejected"
+  ],
+  "data_source": "isolated synthetic fixtures; controlled deadline boundary tests; real background worker and process restart",
+  "browser": {
+    "trip_id": "TRIP_a599879254804ae78b1d3409a5ee699e",
+    "vehicle_id": "S9C_52e604ff_V",
+    "route_id": "ROUTE_0cd6f420466d4a99ada61b106cad380a",
+    "mode": "simulation_demo",
+    "duration_seconds": 30,
+    "deadline_at": "2026-10-16T19:02:09.824000+05:30",
+    "outcomes": [
+      "PICKED_UP",
+      "CANCELLED",
+      "MISSED"
+    ],
+    "checks": [
+      "explicit demo/scope selection",
+      "real GPS arrival opens one shared window",
+      "visible API save error and retry",
+      "manual pickup/cancel actions",
+      "browser closed during worker expiry",
+      "reconnect retains deadline and outcomes",
+      "invalid confirmation disabled",
+      "deliveries stay pending",
+      "all six states in ordered history"
+    ],
+    "page_errors": []
+  }
+}
+{
+  "vehicle_id": "S9A_27c03b73ba",
+  "stored_samples": 3,
+  "duplicate_samples_inserted": 0,
+  "latest_sample": "fresh",
+  "checks": [
+    "unknown/stale/fresh status",
+    "duplicate identity and timestamp alias deduplicated",
+    "out-of-order retained without latest rollback",
+    "conflicting duplicate rejected",
+    "future and invalid inputs rejected",
+    "bounded history",
+    "aware timestamps",
+    "backend restart persistence"
+  ],
+  "arrival_detection": "not exercised by this unassociated vehicle-only fixture; see test_arrivals.py",
+  "actual_device_verification": "not performed",
+  "browser": {
+    "vehicle_id": "S8B_20d527ae_V",
+    "trip_id": "TRIP_87b9bb52f02c47b3b2d3115d4deb2479",
+    "direction": "afternoon",
+    "replay_samples": 31,
+    "source": "simulation",
+    "movement": "synthetic stop sequence, not a driven road trace",
+    "checks": [
+      "real replay script ingestion",
+      "backend marker moved",
+      "manual zoom preserved",
+      "unrelated vehicle unchanged",
+      "unmount stops polling"
+    ],
+    "page_errors": []
+  }
+}
+schools: inserted 2; IDs: PP1_15367c05e5_SCHOOL_A, PP1_15367c05e5_SCHOOL_B
+vehicles: inserted 2; IDs: PP1_15367c05e5_VAN_A, PP1_15367c05e5_VAN_B
+students: inserted 12; IDs: PP1_15367c05e5_STUDENT_01, PP1_15367c05e5_STUDENT_02, PP1_15367c05e5_STUDENT_03, PP1_15367c05e5_STUDENT_04, PP1_15367c05e5_STUDENT_05, PP1_15367c05e5_STUDENT_06, PP1_15367c05e5_STUDENT_07, PP1_15367c05e5_STUDENT_08, PP1_15367c05e5_STUDENT_09, PP1_15367c05e5_STUDENT_10, PP1_15367c05e5_STUDENT_11, PP1_15367c05e5_STUDENT_12
+Synthetic Stage 4 fixture committed. No existing records were overwritten or deleted.
+Verified PP1_15367c05e5_VAN_A morning version 1: ROUTE_5947300a567046eb95253e35ce54d159
+Verified PP1_15367c05e5_VAN_A afternoon version 1: ROUTE_468bc79035ec4dac9fc47c7cead14130
+Verified PP1_15367c05e5_VAN_B morning version 1: ROUTE_94613cff55c24876b167dfc341ba4869
+Verified PP1_15367c05e5_VAN_B afternoon version 1: ROUTE_b0033c03b82e446c844bbbe32a86182c
+{
+  "vehicle_id": "S8B_5a737b81_V",
+  "route_id": "ROUTE_0964c5356fb0446ea5d3d54d894c78ae",
+  "direction": "afternoon",
+  "completed_trip_id": "TRIP_2eb97302b3474da783409781700b9837",
+  "cancelled_trip_id": "TRIP_7248757b252644868407efe6057be015",
+  "checks": [
+    "planned-active-completed",
+    "planned-cancelled",
+    "active-cancelled",
+    "concurrent cross-direction duplicate start rejected",
+    "PostgreSQL active-vehicle unique index enforced",
+    "idempotent create/start/end",
+    "separate DB session and backend process restart persistence",
+    "active route regeneration blocked",
+    "roster edit does not replace trip snapshot",
+    "unfinished actions retained after end",
+    "stale/infeasible/past-date plans rejected",
+    "terminal trips cannot reopen",
+    "legacy lock bypass rejected"
+  ],
+  "data_source": "isolated synthetic Stage 8B fixtures; deterministic simulation routing; no external provider calls"
+}
+test_boundaries_gaps_ordering_single_event_and_current_stop (test_arrivals.ArrivalIntegrationTests.test_boundaries_gaps_ordering_single_event_and_current_stop) ... ok
+test_minimum_count_is_required_even_after_dwell (test_arrivals.ArrivalSettingsTests.test_minimum_count_is_required_even_after_dwell) ... ok
+test_thresholds_and_distance (test_arrivals.ArrivalSettingsTests.test_thresholds_and_distance) ... ok
+test_mutations_failures_idempotency_and_execution_protection (test_auto_planning.AutomaticPlanningTests.test_mutations_failures_idempotency_and_execution_protection) ... ok
+test_actual_signed_deltas_and_unavailable_values (test_auto_planning.ComparisonTests.test_actual_signed_deltas_and_unavailable_values) ... ok
+test_names_are_read_from_generation_snapshot_without_mutation_or_solving (test_driver_route_read.DriverRouteReadTests.test_names_are_read_from_generation_snapshot_without_mutation_or_solving) ... ok
+test_past_service_date_is_stale_but_future_plan_remains_current (test_driver_route_read.DriverRouteReadTests.test_past_service_date_is_stale_but_future_plan_remains_current) ... ok
+test_impossible_deadline_cannot_drop_or_move_students (test_dual_route_solver.DualRouteTests.test_impossible_deadline_cannot_drop_or_move_students) ... ok
+test_missing_coordinates_schedules_and_wrong_assignments_rejected_before_costs (test_dual_route_solver.DualRouteTests.test_missing_coordinates_schedules_and_wrong_assignments_rejected_before_costs) ... ok
+test_multi_school_roster_exceeds_capacity_and_both_directions_serve_every_student (test_dual_route_solver.DualRouteTests.test_multi_school_roster_exceeds_capacity_and_both_directions_serve_every_student) ... ok
+test_postsolve_audit_rejects_wrong_destination_and_load (test_dual_route_solver.DualRouteTests.test_postsolve_audit_rejects_wrong_destination_and_load) ... ok
+test_provider_shapes_numeric_costs_and_solver_bound (test_dual_route_solver.DualRouteTests.test_provider_shapes_numeric_costs_and_solver_bound) ... ok
+test_strict_precedence_with_colocated_zero_time_actions (test_dual_route_solver.DualRouteTests.test_strict_precedence_with_colocated_zero_time_actions) ... ok
+test_travel_time_can_make_a_nonempty_window_impossible (test_dual_route_solver.DualRouteTests.test_travel_time_can_make_a_nonempty_window_impossible) ... ok
+test_unreachable_pair_rejected_before_model_construction (test_dual_route_solver.DualRouteTests.test_unreachable_pair_rejected_before_model_construction) ... ok
+test_failed_or_malformed_responses_never_produce_coordinates (test_geocoding.GeocodingTests.test_failed_or_malformed_responses_never_produce_coordinates) ... ok
+test_google_adapter_returns_unconfirmed_provider_result (test_geocoding.GeocodingTests.test_google_adapter_returns_unconfirmed_provider_result) ... ok
+test_manual_configuration_returns_no_coordinates (test_geocoding.GeocodingTests.test_manual_configuration_returns_no_coordinates) ... ok
+test_student_requires_explicit_confirmation_and_address (test_geocoding.GeocodingTests.test_student_requires_explicit_confirmation_and_address) ... ok
+test_missing_model_reports_unavailable_not_a_prediction (test_ml_pipeline.FeatureTests.test_missing_model_reports_unavailable_not_a_prediction) ... ok
+test_prediction_input_validation (test_ml_pipeline.FeatureTests.test_prediction_input_validation) ... ok
+test_unknown_segment_missing_weather_and_training_only_averages (test_ml_pipeline.FeatureTests.test_unknown_segment_missing_weather_and_training_only_averages) ... ok
+test_provider_costs_are_actual_model_predictions (test_ml_pipeline.GeneratedArtifactTests.test_provider_costs_are_actual_model_predictions) ... ok
+test_real_json_model_unknown_ids_and_load_once (test_ml_pipeline.GeneratedArtifactTests.test_real_json_model_unknown_ids_and_load_once) ... ok
+test_reproducible_dataset_and_whole_trip_chronology (test_ml_pipeline.GeneratedArtifactTests.test_reproducible_dataset_and_whole_trip_chronology) ... ok
+test_atomic_expiry_uniqueness_scoping_read_state_and_restart (test_notifications.PersistentNotificationTests.test_atomic_expiry_uniqueness_scoping_read_state_and_restart) ... ok
+test_ordered_episodes_recovery_expected_waiting_and_loss (test_operational_monitor.OperationalIntegrationTests.test_ordered_episodes_recovery_expected_waiting_and_loss) ... ok
+test_geometry_provenance_validation_and_fallback (test_operational_monitor.OperationalMathTests.test_geometry_provenance_validation_and_fallback) ... ok
+test_metric_segments_endpoints_and_degenerate (test_operational_monitor.OperationalMathTests.test_metric_segments_endpoints_and_degenerate) ... ok
+test_shared_revisit_and_per_stop_scope (test_pickup_windows.PickupGroupingTests.test_shared_revisit_and_per_stop_scope) ... ok
+test_persistence_expiry_restart_boundary_and_races (test_pickup_windows.PickupWindowTests.test_persistence_expiry_restart_boundary_and_races) ... ok
+test_ingestion_ordering_validation_history_and_persistence (test_positions.PositionTests.test_ingestion_ordering_validation_history_and_persistence) ... ok
+test_persistent_versions_both_vehicles_both_directions_and_read_only_latest (test_route_storage.RouteStorageTests.test_persistent_versions_both_vehicles_both_directions_and_read_only_latest) ... ok
+test_geometry_preserves_order_and_reports_missing_display_configuration (test_traffic_provider.GoogleAdapterTests.test_geometry_preserves_order_and_reports_missing_display_configuration) ... ok
+test_missing_credentials_forced_failure_and_past_departure_do_not_call_network (test_traffic_provider.GoogleAdapterTests.test_missing_credentials_forced_failure_and_past_departure_do_not_call_network) ... ok
+test_success_cache_expiry_bounds_and_departure_cache_key (test_traffic_provider.GoogleAdapterTests.test_success_cache_expiry_bounds_and_departure_cache_key) ... ok
+test_timeouts_quota_malformed_and_partial_elements (test_traffic_provider.GoogleAdapterTests.test_timeouts_quota_malformed_and_partial_elements) ... ok
+test_alternative_repricing_ignores_old_normal_costs (test_traffic_provider.SnapshotTests.test_alternative_repricing_ignores_old_normal_costs) ... ok
+test_directed_scenarios_are_selective_deterministic_and_not_global_scaling (test_traffic_provider.SnapshotTests.test_directed_scenarios_are_selective_deterministic_and_not_global_scaling) ... ok
+test_forced_live_failure_uses_loaded_real_xgboost_or_explicit_unavailable (test_traffic_provider.SnapshotTests.test_forced_live_failure_uses_loaded_real_xgboost_or_explicit_unavailable) ... ok
+test_partial_matrix_mixed_route_and_no_calls_during_ortools (test_traffic_provider.SnapshotTests.test_partial_matrix_mixed_route_and_no_calls_during_ortools) ... ok
+test_unreachable_never_becomes_ml_zero_cost (test_traffic_provider.SnapshotTests.test_unreachable_never_becomes_ml_zero_cost) ... ok
+test_persistence_transitions_duplicates_and_pinned_route (test_trip_lifecycle.TripLifecycleTests.test_persistence_transitions_duplicates_and_pinned_route) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 88.492s
+
+OK

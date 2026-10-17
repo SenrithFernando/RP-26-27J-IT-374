@@ -1,0 +1,10 @@
+{
+  "frontend_proxy_health": {
+    "status": "ok"
+  },
+  "route_id": "ROUTE_d24d86fa116d4b99bc240a51ff8c43bb",
+  "version": 3,
+  "backend_proxy_match": true,
+  "ml_available": true,
+  "model_version": "synthetic-xgb-v1-26c03624ed36a729"
+}
