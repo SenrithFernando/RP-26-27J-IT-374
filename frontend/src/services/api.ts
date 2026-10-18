@@ -1,3 +1,4 @@
+import { authHeaders, loginToken, setLoginToken } from './session';
 export type RouteDirection = 'morning' | 'afternoon';
 
 export interface RouteResponse {
@@ -29,12 +30,28 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, signal?: AbortSignal, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`/api${path}`, { ...options, signal });
+  const controller=new AbortController();
+  const upstream=signal??options.signal;
+  const cancel=()=>controller.abort();
+  if(upstream?.aborted)cancel();else upstream?.addEventListener('abort',cancel,{once:true});
+  let timedOut=false;
+  const timeoutMs=path==='/auth/login'||!options.method||options.method==='GET'?12000:120000;
+  const timer=setTimeout(()=>{timedOut=true;controller.abort();},timeoutMs);
+  try {
+  const headers=new Headers(options.headers);
+  const tokenAtStart=loginToken();
+  Object.entries(authHeaders()).forEach(([name,value])=>headers.set(name,value));
+  const response = await fetch(`/api${path}`, { ...options, headers, credentials:'omit', signal:controller.signal });
+  if(response.status===401 && path!=='/auth/login' && loginToken()===tokenAtStart)setLoginToken(null);
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);
     throw new ApiError(errorDetail(body) || `Request failed (${response.status} ${response.statusText})`, response.status);
   }
-  return response.json() as Promise<T>;
+  return await response.json() as T;
+  } catch(error) {
+    if(timedOut)throw new Error('Backend request timed out. Data unavailable. A submitted change may still complete; refresh server state before retrying.');
+    throw error;
+  } finally {clearTimeout(timer);upstream?.removeEventListener('abort',cancel);}
 }
 
 export function fetchRoute(direction: RouteDirection, signal?: AbortSignal) {
@@ -179,6 +196,7 @@ export interface StoredRouteStop {
   service_seconds: number; waiting_seconds: number; load_before: number; load_after: number;
 }
 export interface StoredRoute {
+  daily?: {scenario_id:string;provenance:string;attendance:Record<string,unknown>} | null;
   route_id: string; version: number; vehicle_id: string; direction: RouteDirection; service_date: string;
   departure: string; departure_seconds: number; timezone: string; generated_at: string;
   student_count: number; capacity: number; feasibility_status: string; errors: string[];
@@ -250,6 +268,7 @@ export interface VehiclePosition {
   id: string; sample_id: string; vehicle_id: string; trip_id: string | null;
   source: 'simulation' | 'actual_device'; latitude: number; longitude: number;
   speed_mps: number | null; recorded_at: string; received_at: string;
+  accuracy_m?: number | null; accuracy_quality?: 'unknown'|'poor'|'acceptable'; poor_accuracy_threshold_m?: number; tracking_session_id?: string | null;
 }
 export interface LatestPosition {
   position: VehiclePosition | null; age_seconds: number | null; status: 'fresh' | 'stale' | 'unknown';
@@ -290,7 +309,7 @@ export const cancelPickup = (tripId: string, studentId: string, reason: string) 
 export type NotificationRecipient = 'admin' | 'parent';
 export interface MissedPickupNotice {
   id: string; order_id: number; kind: 'missed_pickup'; trip_id: string; window_id: string;
-  student_id: string; student_name: string; vehicle_id: string; route_id: string; stop_sequence: number;
+  student_id: string; student_name: string; vehicle_id: string; route_id: string; route_version?: number | null; stop_sequence: number;
   occurred_at: string; created_at: string; action_source: string; position_source: string | null;
   mode: 'production' | 'simulation_demo'; delivery_status: 'in_app_event_created'; message: string;
   read: boolean; read_at: string | null;

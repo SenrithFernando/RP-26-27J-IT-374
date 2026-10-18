@@ -5,6 +5,8 @@ import { DemoControlCenter } from './pages/DemoControlCenter';
 import { DriverDashboard } from './pages/DriverDashboard';
 import { ParentDashboard } from './pages/ParentDashboard';
 import { EmergencyResponderDashboard } from './pages/EmergencyResponderDashboard';
+import { AuthProvider,useAuth } from './contexts/AuthContext';
+import { AuthenticatedApp } from './pages/AuthenticatedApp';
 
 function AppContent() {
   const { role, setRole } = useAppContext();
@@ -33,10 +35,13 @@ function AppContent() {
 
 }
 
+function Workspace(){
+  const {user}=useAuth();
+  return <AppProvider key={`${user?.id??'anonymous'}:${user?.mode??'none'}`}><AuthenticatedApp demo={<AppContent />}/></AppProvider>;
+}
+
 export function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>);
+    <AuthProvider><Workspace/></AuthProvider>);
 
 }

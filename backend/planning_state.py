@@ -42,6 +42,9 @@ def comparison(before, after):
 
 
 def freshness(session, route):
+    from landmark import route_freshness
+    specific=route_freshness(session,route)
+    if specific is not None:return specific
     vehicle = session.get(Vehicle, route.vehicle_id)
     state = session.get(RoutePlanState, (route.vehicle_id, route.direction))
     revision = vehicle.roster_version

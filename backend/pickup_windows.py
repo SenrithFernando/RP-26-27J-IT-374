@@ -36,6 +36,10 @@ def policy():
 def trip_settings(session,route,mode,scope):
     cfg=policy()
     scope=scope or cfg[route.direction+'_scope']
+    if route.input_snapshot.get('daily'):
+        if mode!='production':raise HTTPException(422,'Landmark checkpoint uses the explicit 900-second production-duration window, not accelerated mode.')
+        if route.direction=='afternoon':
+            if scope!='per_school':raise HTTPException(422,'Landmark PM boarding uses one shared window per grouped school visit.')
     if route.direction=='morning' and scope!='per_stop': raise HTTPException(422,'Home pickups require per_stop scope; shared school scope applies to afternoon school visits.')
     if mode=='simulation_demo' and session.get(Vehicle,route.vehicle_id).input_source!='simulated':
         raise HTTPException(422,'Accelerated mode requires a simulated vehicle and simulation-only GPS.')
@@ -78,6 +82,8 @@ def create_windows(session,trip,snapshot):
     now=clock(session);window=None;previous=None
     for stop in snapshot['stops']:
         if stop['action']!='pickup': previous=None;continue
+        student_ids=stop.get('student_ids',[stop.get('student_id')])
+        if not student_ids:continue
         shared=cfg['scope']=='per_school' and trip.direction=='afternoon'
         visit=(stop.get('school_id'),stop['latitude'],stop['longitude']) if shared else None
         if not shared or previous!=visit or window is None:
@@ -87,10 +93,11 @@ def create_windows(session,trip,snapshot):
                 mode=cfg['mode'],duration_seconds=cfg['duration_seconds'],changed_at=now)
             session.add(window);session.flush()
             audit(session,window,None,None,'SCHEDULED',now,now,'backend_schedule','Saved route pickup visit scheduled.')
-        student=PickupOutcome(window_id=window.id,trip_id=trip.id,student_id=stop['student_id'],stop_sequence=stop['sequence'],
-            student_name=stop.get('student_name') or names.get(stop['student_id']) or stop['name'],state='SCHEDULED',changed_at=now,action_source='backend_schedule')
-        session.add(student)
-        audit(session,window,student.student_id,None,'SCHEDULED',now,now,'backend_schedule','Individual pickup outcome scheduled; delivery is separate.')
+        for sid in student_ids:
+            student=PickupOutcome(window_id=window.id,trip_id=trip.id,student_id=sid,stop_sequence=stop['sequence'],
+                student_name=stop.get('student_names',{}).get(sid) or stop.get('student_name') or names.get(sid) or stop['name'],state='SCHEDULED',changed_at=now,action_source='backend_schedule')
+            session.add(student)
+            audit(session,window,student.student_id,None,'SCHEDULED',now,now,'backend_schedule','Individual pickup outcome scheduled; delivery is separate.')
         previous=visit
 
 
@@ -101,16 +108,26 @@ def start_from_arrival(session,trip,stop,arrival,now):
     window=session.scalar(select(PickupWindow).where(PickupWindow.id==outcome.window_id).with_for_update())
     if window.started_at is not None or window.state!='SCHEDULED': return
     if window.mode=='simulation_demo' and arrival.source!='simulation': return
-    window.started_at=arrival.arrived_at;window.deadline_at=arrival.arrived_at+timedelta(seconds=window.duration_seconds)
+    started=arrival.arrived_at
+    from models import RouteVersion
+    route=session.get(RouteVersion,trip.route_id)
+    if trip.direction=='afternoon' and route.input_snapshot.get('daily'):
+        from zoneinfo import ZoneInfo
+        from datetime import time
+        release=datetime.combine(route.service_date,time(13,30),ZoneInfo('Asia/Colombo'))
+        window.arrival_event_id=arrival.event_id
+        if now<release:return  # Worker opens it at release, without another GPS transition.
+        started=max(started,release)
+    window.started_at=started;window.deadline_at=started+timedelta(seconds=window.duration_seconds)
     window.arrival_event_id=arrival.event_id
     rows=outcomes(session,window)
     source='arrival_simulation' if arrival.source=='simulation' else 'arrival_actual_device'
-    change_window(session,window,'ARRIVED',arrival.arrived_at,now,source,'Confirmed arrival at applicable current pickup visit.')
+    change_window(session,window,'ARRIVED',started,now,source,'Confirmed arrival at applicable current pickup visit and release reached.')
     for row in rows:
-        if row.state=='SCHEDULED': change_outcome(session,window,row,'ARRIVED',arrival.arrived_at,now,source,'Shared visit arrival applies to this student; not pickup confirmation.')
-    change_window(session,window,'WAITING',arrival.arrived_at,now,'backend_window','Pickup window opened once from GPS arrival timestamp.')
+        if row.state=='SCHEDULED': change_outcome(session,window,row,'ARRIVED',started,now,source,'Shared visit arrival applies to this student; not pickup confirmation.')
+    change_window(session,window,'WAITING',started,now,'backend_window','Pickup window opened once from confirmed arrival and applicable release timestamp; overlaps planned boarding service.')
     for row in rows:
-        if row.state=='ARRIVED': change_outcome(session,window,row,'WAITING',arrival.arrived_at,now,'backend_window','Awaiting explicit pickup confirmation.')
+        if row.state=='ARRIVED': change_outcome(session,window,row,'WAITING',started,now,'backend_window','Awaiting explicit pickup confirmation.')
     expire_window(session,window,rows,now,'expiry_ingestion')
 
 

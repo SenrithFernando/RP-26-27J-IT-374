@@ -3,7 +3,13 @@ from threading import Event, Thread
 
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from auth import authorize, router as auth_router
+from tracking import router as tracking_router
+from account_admin import router as account_admin_router
+from exports_api import router as exports_router
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from optimizer import generate_route
 from sample_data import STUDENTS, VEHICLE
@@ -24,6 +30,7 @@ from pickup_windows import router as pickup_router, policy as pickup_policy
 from pickup_worker import pickup_loop, worker_status
 from notifications import router as notification_router
 from operational_monitor import router as operational_router, configured_operational_settings
+from landmark import router as landmark_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -43,7 +50,11 @@ async def lifespan(app):
         worker.join(timeout=5); expiry_worker.join(timeout=5)
 
 
-app = FastAPI(title="SafeRide-LK Routing API", lifespan=lifespan)
+app = FastAPI(title="SafeRide-LK Routing API", lifespan=lifespan, dependencies=[Depends(authorize)])
+app.include_router(auth_router)
+app.include_router(tracking_router)
+app.include_router(account_admin_router)
+app.include_router(exports_router)
 app.include_router(persistence_router)
 app.include_router(geocoding_router)
 app.include_router(locations_router)
@@ -58,6 +69,22 @@ app.include_router(arrivals_router)
 app.include_router(pickup_router)
 app.include_router(notification_router)
 app.include_router(operational_router)
+app.include_router(landmark_router)
+
+
+@app.exception_handler(RequestValidationError)
+async def private_validation_error(request,error):
+    return JSONResponse(status_code=422,content={'detail':[
+        {'loc':list(item['loc']),'msg':item['msg'],'type':item['type']} for item in error.errors()]})
+
+
+@app.middleware('http')
+async def private_responses(request,call_next):
+    response=await call_next(request)
+    response.headers['Cache-Control']='no-store'
+    response.headers['X-Content-Type-Options']='nosniff'
+    response.headers['Referrer-Policy']='no-referrer'
+    return response
 
 @app.get("/pickup-worker/status")
 def pickup_worker_status():

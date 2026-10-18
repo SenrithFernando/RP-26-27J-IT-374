@@ -6,6 +6,7 @@ import { MapPoint, VehiclePosition } from '../services/api';
 
 type OrderedStop = { id: string; order: number; name: string };
 export interface RouteMapProps {
+  landmarkTest?: boolean;
   points: MapPoint[];
   vehiclePosition?: VehiclePosition | null;
   orderedStops?: OrderedStop[];
@@ -44,7 +45,8 @@ function MapBehavior({ positions, onPositionChange }: { positions: LatLngTuple[]
 }
 
 export function RouteMap({ points, orderedStops = [], missingLocations = [], loading = false, error,
-  vehiclePosition, height = 460, editable = false, onPositionChange }: RouteMapProps) {
+  vehiclePosition, height = 460, editable = false, onPositionChange, landmarkTest = false }: RouteMapProps) {
+  const pointLabel=(kind:MapPoint['kind'])=>landmarkTest&&kind==='home'?'Participant landmark — not a student home':names[kind];
   const [tilesLoading, setTilesLoading] = useState(true);
   const [tileError, setTileError] = useState(false);
   const [tileAttempt, setTileAttempt] = useState(0);
@@ -89,12 +91,12 @@ export function RouteMap({ points, orderedStops = [], missingLocations = [], loa
           const badge = group.length > 1 ? `${firstBadge}+${group.length - 1}` : firstBadge;
           const icon = divIcon({ className: 'saferide-map-marker', html: `<span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:2px solid white;border-radius:50%;background:${colors[point.kind]};color:white;font-size:11px;font-weight:700;box-shadow:0 1px 5px #0005">${badge}</span>`, iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16] });
           return <Marker key={point.id} position={[point.latitude, point.longitude]} icon={icon}
-            title={`${names[point.kind]}: ${point.name}${group.length > 1 ? ` (${group.length} colocated actions)` : ''}`} draggable={editable}
+            title={`${pointLabel(point.kind)}: ${point.name}${group.length > 1 ? ` (${group.length} colocated actions)` : ''}`} draggable={editable}
             eventHandlers={editable ? { dragend(event) { const position = (event.target as LeafletMarker).getLatLng(); onPositionChange?.(position.lat, position.lng); } } : undefined}>
             <Popup maxHeight={300}>{group.map((entry) => {
               const number = orderedStops.find((stop) => stop.id === entry.location_id)?.order;
               return <div key={entry.id} className="py-1">
-                <strong>{entry.name}</strong><br />{names[entry.kind]}{number ? ` | Stop ${number}` : ''}<br />{entry.address}<br />
+                <strong>{entry.name}</strong><br />{pointLabel(entry.kind)}{number ? ` | Stop ${number}` : ''}<br />{entry.address}<br />
                 {entry.latitude.toFixed(6)}, {entry.longitude.toFixed(6)}<br />
                 {entry.action && <>{entry.action} | Student: {entry.student_id ?? 'None'}<br /></>}
                 {entry.eta && <>ETA: {new Date(entry.eta).toLocaleString('en-GB', { timeZone: 'Asia/Colombo' })} | Onboard after: {entry.load_after}<br /></>}

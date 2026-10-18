@@ -49,6 +49,10 @@ class SchoolSchedule(BaseModel):
 
 
 class GeneratedRouteResponse(BaseModel):
+    daily: dict | None = None
+    warnings: list[str] = []
+    preferred_buffer_met: bool | None = None
+    end_policy: str | None = None
     alternative_comparison: dict | None = None
     road_geometry: dict | None = None
     route_id: str

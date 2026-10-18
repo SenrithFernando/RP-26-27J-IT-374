@@ -34,7 +34,15 @@ def today():
 def require_plan(session, route, *, starting=False):
     if not route or route.feasibility_status != "feasible" or not freshness(session, route)["is_current"]:
         raise HTTPException(409, "A feasible, current saved pre-trip route is required. Refresh or generate a new plan in Admin.")
-    if newest(session, route.vehicle_id, route.direction).id != route.id:
+    from landmark import scenario_for_vehicle,publication_blockers
+    from models import LandmarkDailyPlan
+    sc=scenario_for_vehicle(session,route.vehicle_id)
+    if sc:
+        state=session.get(LandmarkDailyPlan,(sc.id,route.service_date,route.direction))
+        blockers,snapshot=publication_blockers(session,sc,route.service_date,route.direction,route)
+        if not state or state.route_id!=route.id or state.publication!='published' or blockers or (snapshot['unresolved_boarding'] and not state.review.get('review_unresolved_boarding')):
+            raise HTTPException(409,'Publish the current dated Daily Plan after attendance/location/evidence review before creating or starting a trip.')
+    elif newest(session, route.vehicle_id, route.direction).id != route.id:
         raise HTTPException(409, "Only the latest current saved route can create or start a trip.")
     if route.service_date < today() or (starting and route.service_date != today()):
         raise HTTPException(409, "Trip start requires today's Sri Lankan service date; past plans cannot create trips.")
@@ -84,10 +92,10 @@ def create_trip(payload: CreateTrip, session: Session = Depends(session_dependen
         return serialize_trip(session, existing)  # Double-click/retry cannot create duplicates.
     require_plan(session, route)
     snapshot = serialize_version(session, route)
-    actions = [{"event_id": stop["event_id"], "sequence": stop["sequence"], "action": stop["action"],
-                "student_id": stop.get("student_id"), "student_name": stop.get("student_name"),
+    actions = [{"event_id": stop["event_id"]+(':'+sid if stop.get('grouped') else ''), "sequence": stop["sequence"], "action": stop["action"],
+                "student_id": sid, "student_name": stop.get('student_names',{}).get(sid,stop.get("student_name")),
                 "school_name": stop.get("school_name"), "name": stop["name"], "status": "PENDING"}
-               for stop in snapshot["stops"] if stop["action"] in ("pickup", "delivery")]
+               for stop in snapshot["stops"] if stop["action"] in ("pickup", "delivery") for sid in stop.get('student_ids',[stop.get('student_id')])]
     from pickup_windows import trip_settings, create_windows
     pickup_settings=trip_settings(session,route,payload.pickup_mode,payload.pickup_scope)
     trip = Trip(pickup_settings=pickup_settings,id="TRIP_"+uuid4().hex, route_id=route.id, vehicle_id=route.vehicle_id,

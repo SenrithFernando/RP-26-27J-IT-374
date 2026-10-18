@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { PositionStatus } from './PositionStatus';
 import { useVehiclePosition } from '../hooks/useVehiclePosition';
 import { DriverTrip } from './DriverTrip';
+import { TrackingAuthorization } from './TrackingAuthorization';
 import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
 import { fetchVehicles, InputSource, RouteDirection, StoredRouteStop, VehicleRecord } from '../services/api';
 import { localPlanningDate, routePoints } from '../services/routePresentation';
@@ -43,9 +45,9 @@ export function DriverStoredRoute({ vehicleId, direction, onVehicleChange, onDir
       <div className="flex items-center gap-3 mb-3">
         <button onClick={onBack} aria-label="Back to driver dashboard" className="p-2 -ml-2 rounded-full hover:bg-white/15"><ArrowLeft size={21} /></button>
         <div className="flex-1 min-w-0"><h2 className="text-lg font-bold">Stored route plan</h2><p className="text-xs text-blue-100 break-all">{vehicleId || 'Select a database vehicle'} · {direction === 'morning' ? 'Morning pickup' : 'Afternoon drop-off'}</p></div>
-        <span className="px-2 py-1 bg-white/15 rounded-full text-xs">Prototype access</span>
+        <span className="px-2 py-1 bg-white/15 rounded-full text-xs">Authenticated access</span>
       </div>
-      <p className="text-xs text-blue-100 mb-3">Explicit test-vehicle selection; this role selector is not driver authentication or authorization.</p>
+      <p className="text-xs text-blue-100 mb-3">Only server-authorized vehicles are listed. Trip and GPS permissions are checked on every request.</p>
       <div className="grid grid-cols-2 gap-2">
         {[['Driving', current ? route?.driving_seconds : null], ['Service', current ? route?.service_seconds : null],
           ['Waiting', current ? route?.waiting_seconds : null], ['Total duration', current ? route?.total_duration_seconds : null]].map(([label, value]) =>
@@ -53,7 +55,8 @@ export function DriverStoredRoute({ vehicleId, direction, onVehicleChange, onDir
       </div>
     </header>
     <main className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4">
-      <label className="block text-sm font-medium text-slate-700">Test vehicle (prototype)<select aria-label="Driver test vehicle" value={vehicleId} disabled={directoryLoading || !!directoryError} onChange={(event) => onVehicleChange(event.target.value)} className="w-full mt-1 p-2 border border-slate-200 rounded-lg bg-white">
+      {selected&&<TrackingAuthorization key={vehicleId} vehicleId={vehicleId} trip={view.trip} synthetic={vehicles.find(v=>v.id===vehicleId)?.input_source==='simulated'}/>}
+      <label className="block text-sm font-medium text-slate-700">Authorized vehicle<select aria-label="Driver test vehicle" value={vehicleId} disabled={directoryLoading || !!directoryError} onChange={(event) => onVehicleChange(event.target.value)} className="w-full mt-1 p-2 border border-slate-200 rounded-lg bg-white">
         <option value="">Select a database vehicle</option>
         {vehicleId && !selected && <option value={vehicleId}>{vehicleId} — unavailable in directory</option>}
         {vehicles.map((vehicle) => <option key={vehicle.id} value={vehicle.id}>{vehicle.id} · capacity {vehicle.capacity}</option>)}
@@ -73,16 +76,8 @@ export function DriverStoredRoute({ vehicleId, direction, onVehicleChange, onDir
       {pending && <p role="status" className="text-sm text-slate-500">Loading stored {direction} plan...</p>}
       {view.error && <p role="alert" className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{view.error} No cached itinerary is treated as current.</p>}
       {!pending && !view.error && view.noRoute && <p role="status" className="p-3 bg-blue-50 text-slate-700 rounded-lg text-sm">No stored {direction} route for {vehicleId}. Generate it in Admin; the driver view only reads stored plans.</p>}
-      {selected && <div role="region" aria-label="Vehicle GPS status" className="bg-white border border-slate-200 rounded-xl p-3 space-y-1 text-xs text-slate-600">
-        <p className="font-semibold">Vehicle position: {gps.error ? 'unknown' : gps.data?.status ?? 'unknown'}</p>
-        {gps.error && <p role="alert" className="text-red-700">Position unavailable: {gps.error}</p>}
-        {gps.data?.position && <><p>Recorded: {time(gps.data.position.recorded_at)} (Sri Lanka)</p><p>Received: {time(gps.data.position.received_at)}</p>
-          <p>Source: {gps.data.position.source === 'simulation' ? 'Simulation - synthetic movement, not a driven road trace' : 'Actual device input (reported)'}</p>
-          <p>Age: {Math.floor(gps.data.age_seconds ?? 0)} s / stale after {gps.data.stale_after_seconds} s</p>
-          <p>{gps.data.position.latitude}, {gps.data.position.longitude} / Speed: {gps.data.position.speed_mps == null ? 'Unknown' : `${gps.data.position.speed_mps} m/s`}</p></>}
-        <p>Missing or stale GPS is not evidence that the vehicle stopped. Current-stop proximity is shown separately; GPS never verifies passengers.</p>
-      </div>}
-      {selected && <DriverTrip operational={gps.operational} operationalError={gps.operationalError} simulationVehicle={vehicles.find(vehicle=>vehicle.id===vehicleId)?.input_source==='simulated'} pickups={gps.pickups} pickupError={gps.pickupError} arrival={gps.arrival} arrivalError={gps.arrivalError} vehiclePosition={gps.data?.position} key={`${vehicleId}:${direction}`} trip={view.trip} error={view.tripError} route={route} canCreate={!!current && !view.refreshing} refresh={refresh} DriverAction={DriverAction} />}
+      {selected && <PositionStatus data={gps.data} error={gps.error} />}
+      {selected && <DriverTrip operational={gps.operational} operationalError={gps.operationalError} simulationVehicle={vehicles.find(vehicle=>vehicle.id===vehicleId)?.input_source==='simulated'} pickups={gps.pickups} pickupError={gps.pickupError} arrival={gps.arrival} arrivalError={gps.arrivalError} vehiclePosition={gps.error ? null : gps.data?.position} key={`${vehicleId}:${direction}`} trip={view.trip} error={view.tripError} route={route} canCreate={!!current && !view.refreshing} refresh={refresh} DriverAction={DriverAction} />}
       {route && <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-600 space-y-2">
         <p className="font-semibold text-slate-800">{current ? 'Current stored pre-trip plan' : 'Historical / non-current plan'}</p>
         <p data-testid="driver-route-id" className="break-all">Route ID: {route.route_id}</p>
@@ -107,12 +102,12 @@ export function DriverStoredRoute({ vehicleId, direction, onVehicleChange, onDir
         {issues.map((issue) => <p key={issue} className="mt-1">{issue}</p>)}
       </div>}
       {current && route && <>
-        <TrafficRouteMap vehiclePosition={gps.data?.position} key={route.route_id} route={route} points={points} orderedStops={route.stops.map((stop) => ({ id: stop.event_id, order: stop.sequence, name: stop.name }))} height={300} />
+        <TrafficRouteMap vehiclePosition={gps.error ? null : gps.data?.position} key={route.route_id} route={route} points={points} orderedStops={route.stops.map((stop) => ({ id: stop.event_id, order: stop.sequence, name: stop.name }))} height={300} />
         <div><p className="text-xs uppercase tracking-wide font-semibold text-slate-400">Ordered pickup / delivery actions</p><h3 className="font-bold text-slate-800">{route.stops.length} stored actions</h3><p className="text-xs text-slate-500">Planned ETA, Asia/Colombo; no live GPS or completion progress implied.</p></div>
         <ol aria-label="Driver stored actions">{route.stops.map((stop) => <DriverAction key={stop.event_id} stop={stop} />)}</ol>
       </>}
     </main>
-    <footer className="p-4 bg-white border-t border-slate-200 text-xs text-slate-500">Persistent manual pickup lifecycle; delivery recording and navigation are not connected here. GPS samples are source-labelled. Cabin/boarding demonstrations retain their separate demo vehicle.</footer>
+    <footer className="p-4 bg-white border-t border-slate-200 text-xs text-slate-500">Persistent manual pickup lifecycle; delivery recording and navigation are not connected here. GPS samples are source-labelled. Cabin, RFID, camera and emergency features: Not connected in Authenticated operations.</footer>
   </section>;
 }
 

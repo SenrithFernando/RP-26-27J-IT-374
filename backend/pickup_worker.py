@@ -1,7 +1,7 @@
 """Local single-process expiry scheduler. Database locks make repeats idempotent."""
 from datetime import datetime, timezone
 from threading import Event, Lock
-from sqlalchemy import select
+from sqlalchemy import select,or_
 from sqlalchemy.orm import Session
 from database import get_engine
 from models import Trip, PickupWindow
@@ -15,15 +15,21 @@ def worker_status():
     with _status_lock: return dict(_status)
 
 
-def expire_due(limit=100):
+def expire_due(limit=100,*,trip_id=None):
     with Session(get_engine()) as session:
-        ids=session.execute(select(PickupWindow.id,PickupWindow.trip_id).where(PickupWindow.state=='WAITING',PickupWindow.deadline_at<=clock(session))
-            .order_by(PickupWindow.deadline_at,PickupWindow.id).limit(limit)).all()
+        query=select(PickupWindow.id,PickupWindow.trip_id).where(or_((PickupWindow.state=='WAITING')&(PickupWindow.deadline_at<=clock(session)),(PickupWindow.state=='SCHEDULED')&PickupWindow.arrival_event_id.is_not(None)))
+        if trip_id is not None:query=query.where(PickupWindow.trip_id==trip_id)
+        ids=session.execute(query.order_by(PickupWindow.deadline_at,PickupWindow.id).limit(limit)).all()
     changed=0
     for id,trip_id in ids:
         with Session(get_engine()) as session:
-            session.scalar(select(Trip).where(Trip.id==trip_id).with_for_update())
+            trip=session.scalar(select(Trip).where(Trip.id==trip_id).with_for_update())
             window=session.scalar(select(PickupWindow).where(PickupWindow.id==id).with_for_update())
+            if window.state=='SCHEDULED' and window.arrival_event_id:
+                from models import TripStopArrival,RouteStop
+                from pickup_windows import start_from_arrival
+                arrival=session.scalar(select(TripStopArrival).where(TripStopArrival.event_id==window.arrival_event_id))
+                if arrival:start_from_arrival(session,trip,session.get(RouteStop,(trip.route_id,arrival.stop_sequence)),arrival,clock(session))
             if expire_window(session,window,outcomes(session,window),clock(session),'expiry_worker'): changed+=1
             session.commit()
     return changed

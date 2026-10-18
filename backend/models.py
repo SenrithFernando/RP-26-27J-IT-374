@@ -194,6 +194,8 @@ class VehiclePosition(Base):
     latitude: Mapped[float]
     longitude: Mapped[float]
     speed_mps: Mapped[float | None]
+    accuracy_m: Mapped[float | None]
+    tracking_session_id: Mapped[str | None] = mapped_column(ForeignKey('tracking_sessions.id',ondelete='RESTRICT'))
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
@@ -202,6 +204,7 @@ class VehiclePosition(Base):
         CheckConstraint("source IN ('simulation', 'actual_device')", name="position_source"),
         CheckConstraint("latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180", name="position_coordinates"),
         CheckConstraint("speed_mps IS NULL OR (speed_mps >= 0 AND speed_mps < 'Infinity'::float8)", name="position_speed"),
+        CheckConstraint("accuracy_m IS NULL OR (accuracy_m >= 0 AND accuracy_m < 'Infinity'::float8)", name="position_accuracy"),
     )
 Index("positions_vehicle_recorded", VehiclePosition.vehicle_id, VehiclePosition.recorded_at.desc(), VehiclePosition.id)
 Index("positions_trip_recorded", VehiclePosition.trip_id, VehiclePosition.recorded_at.desc(), VehiclePosition.id)
@@ -261,7 +264,7 @@ class PickupOutcome(Base):
     picked_up_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     action_source: Mapped[str] = mapped_column(String(48))
     __table_args__ = (UniqueConstraint("trip_id","student_id",name="pickup_student_once"),
-        UniqueConstraint("trip_id","stop_sequence",name="pickup_stop_once"),
+        UniqueConstraint("trip_id","stop_sequence","student_id",name="pickup_stop_once"),
         CheckConstraint("state IN ('SCHEDULED','ARRIVED','WAITING','PICKED_UP','MISSED','CANCELLED')",name="pickup_outcome_state"))
 
 class PickupTransition(Base):
@@ -378,3 +381,106 @@ class ProvenanceCorrection(Base):
     correction_code: Mapped[str] = mapped_column(String(80))
     corrected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     __table_args__ = (UniqueConstraint("entity_table", "entity_key", "field_name", "correction_code", name="provenance_correction_once"),)
+
+
+class Account(Base):
+    __tablename__ = "accounts"
+    id: Mapped[str] = mapped_column(String(64),primary_key=True)
+    username: Mapped[str] = mapped_column(String(100),unique=True)
+    password_hash: Mapped[str] = mapped_column(String(500))
+    role: Mapped[str] = mapped_column(String(16))
+    active: Mapped[bool] = mapped_column(Boolean,default=False)
+    demo_only: Mapped[bool] = mapped_column(Boolean,default=False)
+    failed_attempts: Mapped[int] = mapped_column(default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__=(CheckConstraint("role IN ('administrator','driver','parent')",name="account_role"),)
+
+
+class DriverVehicle(Base):
+    __tablename__="driver_vehicles"
+    account_id: Mapped[str]=mapped_column(ForeignKey("accounts.id",ondelete="RESTRICT"),primary_key=True)
+    vehicle_id: Mapped[str]=mapped_column(ForeignKey("vehicles.id",ondelete="RESTRICT"),primary_key=True)
+
+
+class ParentStudent(Base):
+    __tablename__="parent_students"
+    account_id: Mapped[str]=mapped_column(ForeignKey("accounts.id",ondelete="RESTRICT"),primary_key=True)
+    student_id: Mapped[str]=mapped_column(ForeignKey("students.id",ondelete="RESTRICT"),primary_key=True)
+
+
+class LoginSession(Base):
+    __tablename__="login_sessions"
+    id: Mapped[str]=mapped_column(String(64),primary_key=True)
+    token_hash: Mapped[str]=mapped_column(String(64),unique=True)
+    account_id: Mapped[str]=mapped_column(ForeignKey("accounts.id",ondelete="RESTRICT"),index=True)
+    mode: Mapped[str]=mapped_column(String(8))
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime]=mapped_column(DateTime(timezone=True),index=True)
+    revoked_at: Mapped[datetime | None]=mapped_column(DateTime(timezone=True))
+    __table_args__=(CheckConstraint("mode IN ('demo','real')",name="login_mode"),)
+
+
+class TrackingSession(Base):
+    __tablename__="tracking_sessions"
+    id: Mapped[str]=mapped_column(String(64),primary_key=True)
+    token_hash: Mapped[str]=mapped_column(String(64),unique=True)
+    login_session_id: Mapped[str]=mapped_column(ForeignKey("login_sessions.id",ondelete="RESTRICT"),index=True)
+    vehicle_id: Mapped[str]=mapped_column(ForeignKey("vehicles.id",ondelete="RESTRICT"),index=True)
+    trip_id: Mapped[str]=mapped_column(ForeignKey("trips.id",ondelete="RESTRICT"),index=True)
+    kind: Mapped[str]=mapped_column(String(16))
+    label: Mapped[str]=mapped_column(String(100))
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None]=mapped_column(DateTime(timezone=True))
+    __table_args__=(CheckConstraint("kind IN ('phone','simulation')",name="tracking_kind"),)
+
+
+class LandmarkScenario(Base):
+    __tablename__='landmark_scenarios'
+    id: Mapped[str]=mapped_column(String(64),primary_key=True)
+    vehicle_id: Mapped[str]=mapped_column(ForeignKey('vehicles.id'),unique=True)
+    default_date: Mapped[date]=mapped_column(Date)
+    policy: Mapped[dict]=mapped_column(JSONB)
+
+
+class LandmarkAttendance(Base):
+    __tablename__='landmark_attendance'
+    scenario_id: Mapped[str]=mapped_column(ForeignKey('landmark_scenarios.id'),primary_key=True)
+    service_date: Mapped[date]=mapped_column(Date,primary_key=True)
+    student_id: Mapped[str]=mapped_column(ForeignKey('students.id'),primary_key=True)
+    am: Mapped[str]=mapped_column(String(12))
+    pm: Mapped[str]=mapped_column(String(12))
+    occurred_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    event_id: Mapped[str]=mapped_column(String(128))
+    __table_args__=(CheckConstraint("am IN ('yes','no','unknown') AND pm IN ('yes','no','unknown')",name='landmark_attendance_values'),)
+
+
+class LandmarkBoarding(Base):
+    __tablename__='landmark_boarding'
+    scenario_id: Mapped[str]=mapped_column(ForeignKey('landmark_scenarios.id'),primary_key=True)
+    service_date: Mapped[date]=mapped_column(Date,primary_key=True)
+    student_id: Mapped[str]=mapped_column(ForeignKey('students.id'),primary_key=True)
+    outcome: Mapped[str]=mapped_column(String(12))
+    occurred_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    event_id: Mapped[str]=mapped_column(String(128))
+    __table_args__=(CheckConstraint("outcome IN ('boarded','no_show','unknown')",name='landmark_boarding_values'),)
+
+
+class LandmarkInputEvent(Base):
+    __tablename__='landmark_input_events'
+    event_id: Mapped[str]=mapped_column(String(128),primary_key=True)
+    scenario_id: Mapped[str]=mapped_column(ForeignKey('landmark_scenarios.id'))
+    payload_hash: Mapped[str]=mapped_column(String(64))
+    payload: Mapped[dict]=mapped_column(JSONB)
+    actor_id: Mapped[str]=mapped_column(String(64))
+    received_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+
+
+class LandmarkDailyPlan(Base):
+    __tablename__='landmark_daily_plans'
+    scenario_id: Mapped[str]=mapped_column(ForeignKey('landmark_scenarios.id'),primary_key=True)
+    service_date: Mapped[date]=mapped_column(Date,primary_key=True)
+    direction: Mapped[str]=mapped_column(String(16),primary_key=True)
+    route_id: Mapped[str|None]=mapped_column(ForeignKey('route_versions.id'))
+    publication: Mapped[str]=mapped_column(String(16),default='draft')
+    review: Mapped[dict]=mapped_column(JSONB,default=dict)

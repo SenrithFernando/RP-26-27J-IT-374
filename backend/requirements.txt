@@ -8,3 +8,4 @@ python-dotenv>=1,<2
 xgboost>=3.4,<3.5
 numpy>=2,<3
 scikit-learn>=1.9,<2
+argon2-cffi>=25.1,<26

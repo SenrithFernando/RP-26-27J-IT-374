@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from typing import Literal
 from uuid import uuid4
 
@@ -87,18 +87,44 @@ def database_health(session: Session = Depends(session_dependency)):
 
 
 @router.get("/schools", response_model=list[SchoolRecord])
-def schools(session: Session = Depends(session_dependency)):
-    return session.scalars(select(School).order_by(School.id)).all()
+def schools(session: Session = Depends(session_dependency),request:Request=None):
+    query=select(School)
+    if request:
+        from models import DriverVehicle,ParentStudent
+        p=request.state.principal
+        if p.user.role=='parent':query=query.where(School.id.in_(select(Student.school_id).join(ParentStudent,ParentStudent.student_id==Student.id).where(ParentStudent.account_id==p.user.id)))
+        if p.user.role=='driver':query=query.where(School.id.in_(select(Student.school_id).join(DriverVehicle,DriverVehicle.vehicle_id==Student.vehicle_id).where(DriverVehicle.account_id==p.user.id)))
+        if p.login.mode=='demo':query=query.where(School.input_source=='simulated')
+    return session.scalars(query.order_by(School.id)).all()
 
 
 @router.get("/vehicles", response_model=list[VehicleRecord])
-def vehicles(session: Session = Depends(session_dependency)):
-    return session.scalars(select(Vehicle).order_by(Vehicle.id)).all()
+def vehicles(session: Session = Depends(session_dependency),request:Request=None):
+    query=select(Vehicle)
+    if request:
+        from models import DriverVehicle
+        p=request.state.principal
+        if p.user.role=='driver':query=query.where(Vehicle.id.in_(select(DriverVehicle.vehicle_id).where(DriverVehicle.account_id==p.user.id)))
+        if p.login.mode=='demo':query=query.where(Vehicle.input_source=='simulated')
+    rows=session.scalars(query.order_by(Vehicle.id)).all()
+    if request:
+        from auth import scope_vehicle
+        rows=[r for r in rows if scope_vehicle(session,request.state.principal,r.id)]
+    return rows
 
 
 @router.get("/students", response_model=list[StudentRecord])
-def students(session: Session = Depends(session_dependency)):
-    return session.scalars(select(Student).order_by(Student.id)).all()
+def students(session: Session = Depends(session_dependency),request:Request=None):
+    query=select(Student)
+    if request:
+        from models import DriverVehicle,ParentStudent
+        p=request.state.principal
+        if p.user.role=='parent':query=query.where(Student.id.in_(select(ParentStudent.student_id).where(ParentStudent.account_id==p.user.id)))
+        if p.user.role=='driver':query=query.where(Student.vehicle_id.in_(select(DriverVehicle.vehicle_id).where(DriverVehicle.account_id==p.user.id)))
+        if p.login.mode=='demo':query=query.where(Student.input_source=='simulated',
+            Student.vehicle_id.in_(select(Vehicle.id).where(Vehicle.input_source=='simulated')),
+            Student.school_id.in_(select(School.id).where(School.input_source=='simulated')))
+    return session.scalars(query.order_by(Student.id)).all()
 
 
 class StudentWrite(BaseModel):

@@ -104,6 +104,17 @@ def process_event(session, event_id):
         response = get_event_response(session, event_id); session.commit(); return response
     plans, errors = [], []
     for vehicle_id, target_revision in sorted(event.affected_vehicles.items()):
+        from landmark import scenario_for_vehicle,regenerate
+        from models import LandmarkDailyPlan
+        landmark=scenario_for_vehicle(session,vehicle_id)
+        if landmark:
+            days=set(session.scalars(select(LandmarkDailyPlan.service_date).where(LandmarkDailyPlan.scenario_id==landmark.id))) or {landmark.default_date}
+            for generated in regenerate(session,landmark,days):
+                item={**generated,'vehicle_id':vehicle_id,'roster_version':target_revision,'generation_status':generated['status'],'generated':bool(generated.get('route_id')),'comparison':{}}
+                if generated['status'] not in SUCCESS and not generated['status'].startswith('deferred_'):
+                    item['errors']=['Inputs saved; dated landmark plan is '+generated['status']+'. Review Daily Plan.'];errors.extend(item['errors'])
+                plans.append(item)
+            continue
         for direction in DIRECTIONS:
             state = session.get(RoutePlanState, (vehicle_id, direction))
             vehicle = session.get(Vehicle, vehicle_id)

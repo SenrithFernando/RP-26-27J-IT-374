@@ -1,0 +1,530 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "saferide-routing-provisional/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "producer": {
+      "enum": [
+        "manual_test",
+        "hasara_adapter_provisional"
+      ],
+      "title": "Producer",
+      "type": "string"
+    },
+    "provenance": {
+      "const": "landmark_test",
+      "title": "Provenance",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "attendance",
+        "boarding",
+        "assignment",
+        "vehicle",
+        "school",
+        "policy"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Reason",
+      "type": "string"
+    },
+    "records": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "title": "Records",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "event_id",
+    "occurred_at",
+    "producer",
+    "provenance",
+    "kind",
+    "reason",
+    "records"
+  ],
+  "title": "Envelope",
+  "type": "object",
+  "$id": "saferide-routing-provisional-v1",
+  "description": "Our provisional adapter contract, not Hasara API. Only isolated landmark_test data accepted.",
+  "$defs": {
+    "AttendanceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "student_external_id": {
+          "title": "Student External Id",
+          "type": "string"
+        },
+        "service_date": {
+          "format": "date",
+          "title": "Service Date",
+          "type": "string"
+        },
+        "am": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "title": "Am",
+          "type": "string"
+        },
+        "pm": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "title": "Pm",
+          "type": "string"
+        }
+      },
+      "required": [
+        "student_external_id",
+        "service_date",
+        "am",
+        "pm"
+      ],
+      "title": "AttendanceRecord",
+      "type": "object"
+    },
+    "BoardingRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "student_external_id": {
+          "title": "Student External Id",
+          "type": "string"
+        },
+        "service_date": {
+          "format": "date",
+          "title": "Service Date",
+          "type": "string"
+        },
+        "direction": {
+          "const": "morning",
+          "default": "morning",
+          "title": "Direction",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "boarded",
+            "no_show",
+            "unknown"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        }
+      },
+      "required": [
+        "student_external_id",
+        "service_date",
+        "outcome"
+      ],
+      "title": "BoardingRecord",
+      "type": "object"
+    },
+    "AssignmentRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "latitude": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latitude"
+        },
+        "longitude": {
+          "anyOf": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longitude"
+        },
+        "student_external_id": {
+          "title": "Student External Id",
+          "type": "string"
+        },
+        "school_external_id": {
+          "enum": [
+            "SCH_A",
+            "SCH_B"
+          ],
+          "title": "School External Id",
+          "type": "string"
+        },
+        "vehicle_external_id": {
+          "const": "VAN_01",
+          "default": "VAN_01",
+          "title": "Vehicle External Id",
+          "type": "string"
+        },
+        "active": {
+          "default": true,
+          "title": "Active",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "student_external_id",
+        "school_external_id"
+      ],
+      "title": "AssignmentRecord",
+      "type": "object"
+    },
+    "VehicleRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "latitude": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latitude"
+        },
+        "longitude": {
+          "anyOf": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longitude"
+        },
+        "vehicle_external_id": {
+          "const": "VAN_01",
+          "title": "Vehicle External Id",
+          "type": "string"
+        },
+        "capacity": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Capacity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "vehicle_external_id",
+        "capacity"
+      ],
+      "title": "VehicleRecord",
+      "type": "object"
+    },
+    "SchoolRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        },
+        "latitude": {
+          "anyOf": [
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latitude"
+        },
+        "longitude": {
+          "anyOf": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Longitude"
+        },
+        "school_external_id": {
+          "enum": [
+            "SCH_A",
+            "SCH_B"
+          ],
+          "title": "School External Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "starts_seconds": {
+          "const": 27000,
+          "default": 27000,
+          "title": "Starts Seconds",
+          "type": "integer"
+        },
+        "hard_arrival_seconds": {
+          "const": 26100,
+          "default": 26100,
+          "title": "Hard Arrival Seconds",
+          "type": "integer"
+        },
+        "preferred_arrival_seconds": {
+          "const": 25500,
+          "default": 25500,
+          "title": "Preferred Arrival Seconds",
+          "type": "integer"
+        },
+        "release_seconds": {
+          "const": 48600,
+          "default": 48600,
+          "title": "Release Seconds",
+          "type": "integer"
+        },
+        "morning_group_service_seconds": {
+          "const": 600,
+          "default": 600,
+          "title": "Morning Group Service Seconds",
+          "type": "integer"
+        },
+        "afternoon_group_service_seconds": {
+          "const": 900,
+          "default": 900,
+          "title": "Afternoon Group Service Seconds",
+          "type": "integer"
+        },
+        "boarding_window_seconds": {
+          "const": 900,
+          "default": 900,
+          "title": "Boarding Window Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "school_external_id",
+        "name"
+      ],
+      "title": "SchoolRecord",
+      "type": "object"
+    },
+    "PolicyRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "afternoon_only": {
+          "enum": [
+            "unresolved",
+            "allow",
+            "deny"
+          ],
+          "title": "Afternoon Only",
+          "type": "string"
+        }
+      },
+      "required": [
+        "afternoon_only"
+      ],
+      "title": "PolicyRecord",
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "attendance"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/AttendanceRecord"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "boarding"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/BoardingRecord"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "assignment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/AssignmentRecord"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "vehicle"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/VehicleRecord"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "school"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/SchoolRecord"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "policy"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/$defs/PolicyRecord"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

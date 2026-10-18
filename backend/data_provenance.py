@@ -39,6 +39,8 @@ def position_exclusion_reason(session, position):
     """Conservative candidate filter, NOT physical-device authentication/quality proof."""
     if position.source != "actual_device":
         return "not_actual_device"
+    from positions import accuracy_quality
+    if accuracy_quality(position)=='poor':return 'poor_position_accuracy'
     if session.scalar(select(ProvenanceCorrection.id).where(
             ProvenanceCorrection.entity_table == "vehicle_positions",
             ProvenanceCorrection.entity_key == position.id,

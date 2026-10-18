@@ -101,6 +101,8 @@ def arrival_view(session,trip,now=None):
         .order_by(VehiclePosition.recorded_at.desc(),VehiclePosition.id).limit(1))
     age=(now-position.recorded_at).total_seconds() if position else None
     usable=position is not None and 0<=age<=cfg.freshness_seconds and trip.current_stop_selected_at is not None and position.recorded_at>trip.current_stop_selected_at
+    from positions import accuracy_quality
+    usable=usable and accuracy_quality(position)!='poor'
     usable=usable and row is not None and (row.arrived_at is not None or row.last_recorded_at==position.recorded_at)
     reason=None
     if trip.state!='ACTIVE': reason="Trip is not active. Historical arrival evidence is retained."

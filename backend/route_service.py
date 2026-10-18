@@ -58,11 +58,16 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
     vehicle_row = session.scalar(select(Vehicle).where(Vehicle.id == request.vehicle_id).with_for_update())
     if vehicle_row is None:
         raise HTTPException(404, "Registered vehicle not found.")
+    from landmark import scenario_for_vehicle,prepare_context,attach_plan
+    landmark=scenario_for_vehicle(session,vehicle_row.id)
+    daily_context=None
     # Lock inactive registrations too: reactivation cannot change the roster mid-solve.
     registered_rows = session.scalars(select(Student).where(Student.vehicle_id == vehicle_row.id)
                                       .order_by(Student.id).with_for_update()).all()
     student_rows = [student for student in registered_rows if student.active]
+    if landmark:student_rows,daily_context=prepare_context(session,landmark,request)
     school_ids = {student.school_id for student in student_rows}
+    if landmark:school_ids=set(landmark.policy['school_ids'])
     school_rows = session.scalars(select(School).where(School.id.in_(school_ids)).order_by(School.id).with_for_update()).all() if school_ids else []
     vehicle = RegisteredVehicle(vehicle_row.id, vehicle_row.capacity,
         location(vehicle_row.start_latitude, vehicle_row.start_longitude, vehicle_row.start_confirmed, vehicle_row.start_address, vehicle_row.input_source, vehicle_row.start_method),
@@ -78,7 +83,15 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
     provider = TrafficSnapshotProvider(request)
     prior_version = newest(session, request.vehicle_id, request.direction)
     provider.reference_stops = [s.details for s in session.scalars(select(RouteStop).where(RouteStop.route_id == prior_version.id).order_by(RouteStop.sequence))] if prior_version else None
-    result = solve_registered_route(vehicle, students, schools, settings, provider) if students else failure("empty", ["No active students assigned; no pre-trip route is required."])
+    if landmark:
+        from landmark_solver import solve_landmark
+        if request.direction=='afternoon':vehicle=RegisteredVehicle(vehicle.id,vehicle.capacity,schools[sorted(schools)[1]].location,vehicle.end)
+        else:vehicle=RegisteredVehicle(vehicle.id,vehicle.capacity,vehicle.start,vehicle.start)
+        if daily_context['attendance']['unknown_attendance']:result=failure('attendance_unresolved',['Unknown dated attendance; explicitly record yes/no before generating a complete plan.'])
+        else:result=solve_landmark(vehicle,students,schools,settings,provider)
+        result['daily']={'scenario_id':landmark.id,'provenance':daily_context['provenance'],'attendance':daily_context['attendance']}
+    else:
+        result = solve_registered_route(vehicle, students, schools, settings, provider) if students else failure("empty", ["No active students assigned; no pre-trip route is required."])
     result['road_geometry'] = {'status': 'unavailable', 'reason': 'This estimate has no configured road geometry; display stop sequence only.'}
     if request.provider == 'google' and request.include_geometry and result['feasibility_status'] == 'feasible':
         stamp = datetime.fromisoformat(result['provider_source']['departure_timestamp'])
@@ -103,7 +116,7 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
         version=previous + 1, roster_version=vehicle_row.roster_version, trigger_event_id=trigger_event_id, trigger_event_type=trigger_event_type, execution_status="pre_trip", service_date=request.service_date, departure_seconds=request.departure_seconds,
         feasibility_status=result["feasibility_status"], request_settings=request.model_dump(mode="json"),
         input_snapshot={"vehicle": asdict(vehicle), "students": [asdict(student) for student in students],
-                        "schools": {key: asdict(school) for key, school in schools.items()}}, result=result)
+                        "schools": {key: asdict(school) for key, school in schools.items()},**({'daily':daily_context} if landmark else {})}, result=result)
     session.add(version)
     session.flush()
     for stop in stops:
@@ -111,6 +124,7 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
                               location_id=stop["location_id"], latitude=stop["latitude"], longitude=stop["longitude"],
                               eta_seconds=stop["eta_seconds"], details=stop))
     session.flush()
+    if landmark:attach_plan(session,landmark,version)
     set_generated_state(session, version, prior)
     if commit: session.commit()
     return serialize_version(session, version)

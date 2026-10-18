@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useRe
 import { Role, Vehicle, Student, Notification, SafetyState, RouteState, PickupWindowState, EmergencyState, CrashSeverity, CrashData, Driver, Assistant, CrewAssignment, VehicleCall } from '../types';
 import { MOCK_VEHICLES, MOCK_STUDENTS, MOCK_DRIVERS, MOCK_ASSISTANTS, MOCK_CREW_ASSIGNMENTS } from '../data/mockData';
 import { MORNING_STOPS } from '../data/routeData';
+import { useAuth } from './AuthContext';
 import { createStudent, fetchStudents, RoutingOutcome, StudentMutation, StudentRecord, StudentWrite } from '../services/api';
 
 export type TripState = 'IDLE' | 'MORNING' | 'AFTERNOON' | 'ENDED';
@@ -135,6 +136,8 @@ const initialNotifications: Notification[] = [
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: {children: ReactNode;}) {
+  const {user}=useAuth();
+  const simulationWorkspace=user?.mode==='demo';
   const [role, setRole] = useState<Role>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>(MOCK_VEHICLES);
   const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
@@ -246,7 +249,7 @@ export function AppProvider({ children }: {children: ReactNode;}) {
 
   // Driver 30 second override countdown
   useEffect(() => {
-    if (emergency.driverPhase !== 'COUNTDOWN') return;
+    if (!simulationWorkspace || emergency.driverPhase !== 'COUNTDOWN') return;
     if (emergency.driverCountdown <= 0) {
       driverTimeout();
       return;
@@ -257,16 +260,16 @@ export function AppProvider({ children }: {children: ReactNode;}) {
       prev);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [emergency.driverPhase, emergency.driverCountdown]);
+  }, [simulationWorkspace, emergency.driverPhase, emergency.driverCountdown]);
 
   // Pickup window countdown
   useEffect(() => {
-    if (pickupWindow.expired || pickupWindow.remainingSeconds <= 0) return;
+    if (!simulationWorkspace || pickupWindow.expired || pickupWindow.remainingSeconds <= 0) return;
     const timer = setTimeout(() => {
       setPickupWindow((prev) => ({ ...prev, remainingSeconds: Math.max(0, prev.remainingSeconds - 1) }));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [pickupWindow.expired, pickupWindow.remainingSeconds]);
+  }, [simulationWorkspace, pickupWindow.expired, pickupWindow.remainingSeconds]);
 
   const triggerCrash = (severity: CrashSeverity) => {
     const time = getTimeStr();

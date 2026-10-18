@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
+import { authHeaders } from '../services/session';
 import { StoredRoute } from '../services/api';
 import { MapLoader } from './MapLoader';
 import type { RouteMapProps } from './RouteMap';
 
 export const sourceName = (source?: string) => ({ simulation: 'Simulated traffic', ml_prediction: 'ML prediction · synthetic training',
-  google_live: 'Google traffic-aware input', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
+  google_live: 'Google traffic-aware estimate', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
   unavailable: 'Unavailable', geographic_zero: 'Colocated · zero travel', start: 'Vehicle start' }[source ?? ''] ?? source ?? 'Source unavailable');
 
 export function SourceBadge({ source }: { source?: string }) {
@@ -28,13 +29,24 @@ export function AlternativeComparison({ route }: { route: StoredRoute }) {
 }
 
 export function TrafficRouteMap({ route, ...props }: RouteMapProps & { route?: StoredRoute | null }) {
+  const landmarkTest=props.landmarkTest||route?.daily?.scenario_id==='MALABE_PP1';
   const [failedImage, setFailedImage] = useState('');
+  const [image,setImage]=useState<{key:string;url:string}|null>(null);
   const geometry = route?.road_geometry;
+  const imageId=!props.vehiclePosition && geometry?.status==='available' && geometry.map_available?route?.route_id:'';
+  useEffect(()=>{
+    const controller=new AbortController();let alive=true,url='';setImage(null);
+    if(imageId)void fetch(`/api/routes/${encodeURIComponent(imageId)}/map-image`,{headers:authHeaders(),credentials:'omit',signal:controller.signal})
+      .then(response=>{if(!response.ok)throw new Error('Map unavailable');return response.blob();})
+      .then(blob=>{if(alive){url=URL.createObjectURL(blob);setImage({key:imageId,url});}})
+      .catch(()=>{if(alive)setFailedImage(imageId);});
+    return()=>{alive=false;controller.abort();if(url)URL.revokeObjectURL(url);};
+  },[imageId]);
   if (!props.vehiclePosition && route && geometry?.status === 'available' && geometry.map_available && failedImage !== route.route_id) {
-    return <div className="space-y-2"><img src={`/api/routes/${encodeURIComponent(route.route_id)}/map-image`} alt="Ordered road geometry on a Google Map" className="w-full rounded-xl" onError={() => setFailedImage(route.route_id)} />
+    return <div className="space-y-2">{image?.key===route.route_id?<img src={image.url} alt="Ordered road geometry on a Google Map" className="w-full rounded-xl" onError={() => setFailedImage(route.route_id)} />:<p>Loading authorized map…</p>}
       <p className="text-xs text-slate-600">Road geometry · Google Maps. {geometry.description}</p>
-      <details className="text-xs text-slate-500"><summary className="cursor-pointer">Confirmed locations and stop popups</summary><MapLoader {...props} orderedStops={[]} /></details>
+      <details className="text-xs text-slate-500"><summary className="cursor-pointer">Confirmed locations and stop popups</summary><MapLoader {...props} landmarkTest={landmarkTest} orderedStops={[]} /></details>
     </div>;
   }
-  return <div className="space-y-2">{geometry && <p className="text-xs text-amber-800 px-3">{failedImage === route?.route_id ? 'Road map image unavailable; showing stop sequence.' : geometry.reason ?? geometry.map_reason}</p>}<MapLoader {...props} /></div>;
+  return <div className="space-y-2">{geometry && <p className="text-xs text-amber-800 px-3">{failedImage === route?.route_id ? 'Road map image unavailable; showing stop sequence.' : geometry.reason ?? geometry.map_reason}</p>}<MapLoader {...props} landmarkTest={landmarkTest} /></div>;
 }

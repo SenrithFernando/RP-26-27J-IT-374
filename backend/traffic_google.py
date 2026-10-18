@@ -50,7 +50,11 @@ cache = BoundedCache(maximum=32, ttl=60)
 
 
 def post_google(method, body, fields, key, timeout):
-    req = Request(f'https://routes.googleapis.com/directions/v2:{method}', data=json.dumps(body).encode(),
+    endpoints = {'computeRouteMatrix': 'distanceMatrix/v2:computeRouteMatrix',
+                 'computeRoutes': 'directions/v2:computeRoutes'}
+    if method not in endpoints:
+        raise ProviderFailure('unsupported_method', 'Unsupported Google Routes method.')
+    req = Request('https://routes.googleapis.com/' + endpoints[method], data=json.dumps(body).encode(),
         headers={'Content-Type': 'application/json', 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': fields})
     try:
         with urlopen(req, timeout=timeout) as response:

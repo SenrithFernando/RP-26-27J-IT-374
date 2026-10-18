@@ -32,6 +32,9 @@ def school_schedule(school_id: str, payload: SchoolSchedule, session: Session = 
     def change():
         school = session.get(School, school_id)
         if school is None: raise HTTPException(404, "School not found.")
+        from landmark import PREFIX,SCHOOLS
+        if school_id in [PREFIX+k for k in SCHOOLS] and (payload.morning_deadline_seconds!=26100 or payload.afternoon_finish_seconds!=48600):
+            raise HTTPException(422,'Malabe test policy fixes hard arrival at 07:15 and release at 13:30; it cannot be silently relaxed here.')
         before = columns(school)
         school.morning_deadline_seconds = payload.morning_deadline_seconds
         school.afternoon_finish_seconds = payload.afternoon_finish_seconds

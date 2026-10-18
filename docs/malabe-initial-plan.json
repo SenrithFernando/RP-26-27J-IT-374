@@ -1,0 +1,764 @@
+{
+  "scenario_id": "MALABE_PP1",
+  "name": "Malabe landmark field test",
+  "service_date": "2026-10-19",
+  "default_date": "2026-10-19",
+  "timezone": "Asia/Colombo",
+  "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+  "policy": {
+    "name": "Malabe landmark field test",
+    "timezone": "Asia/Colombo",
+    "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+    "school_ids": [
+      "MALABE_PP1_SCH_A",
+      "MALABE_PP1_SCH_B"
+    ],
+    "student_ids": [
+      "MALABE_PP1_TEST_01",
+      "MALABE_PP1_TEST_02",
+      "MALABE_PP1_TEST_03",
+      "MALABE_PP1_TEST_04",
+      "MALABE_PP1_TEST_05",
+      "MALABE_PP1_TEST_06",
+      "MALABE_PP1_TEST_07",
+      "MALABE_PP1_TEST_08"
+    ],
+    "afternoon_only": "unresolved",
+    "contract_version": "saferide-routing-provisional/v1",
+    "coordinate_origins": {
+      "SCH_B": "user_supplied_pending_map_confirmation"
+    },
+    "supplied_depot_address": "SALT EduWay, 488/2 Lake Road, Averihena, Hokandara, South, Battaramulla 10118",
+    "supplied_school_addresses": {
+      "SCH_A": "482/B Millennium Dr, Malabe 10115",
+      "SCH_B": "391 Kaduwela Rd, Malabe 10115"
+    },
+    "supplied_participant_addresses": {
+      "TEST_01": "Rampe Kitchen, 318 4kaduwela rd, Malabe 10115",
+      "TEST_02": "Shoe Labz X Enzon, Junction, New Kandy Rd, Malabe",
+      "TEST_03": "CINEC Campus (Pvt) Ltd, IT Park, Millennium Dr, Malabe",
+      "TEST_04": "Datha's Boarding Place, WX7C+M39, Pasan Mawatha, Malabe",
+      "TEST_05": "SkyLights 3D Cinema, 471/E Athurugiriya Rd, Malabe",
+      "TEST_06": "Keells - Pittugala, 296 Kaduwela Rd, Malabe",
+      "TEST_07": "Sri Lanka Institute of Information Technology, SLIIT Malabe Campus, New Kandy Rd, Malabe 10115",
+      "TEST_08": "GRAPHIC HEART STAMPS, 255/3, Malabe 10115"
+    }
+  },
+  "counts": {
+    "morning": 8,
+    "afternoon": 7
+  },
+  "plans": {
+    "morning": {
+      "route": {
+        "daily": {
+          "attendance": {
+            "rows": [
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_01",
+                "external_id": "TEST_01",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_02",
+                "external_id": "TEST_02",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "no",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_03",
+                "external_id": "TEST_03",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_04",
+                "external_id": "TEST_04",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_05",
+                "external_id": "TEST_05",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_06",
+                "external_id": "TEST_06",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_07",
+                "external_id": "TEST_07",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_08",
+                "external_id": "TEST_08",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              }
+            ],
+            "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+            "unknown_attendance": [],
+            "unresolved_boarding": [],
+            "unresolved_afternoon_only": []
+          },
+          "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+          "scenario_id": "MALABE_PP1"
+        },
+        "errors": [
+          "Unconfirmed or missing landmark/depot/school coordinates; review pins. No coordinates were invented."
+        ],
+        "capacity": 20,
+        "optimality": "No global optimum is claimed.",
+        "road_geometry": {
+          "reason": "This estimate has no configured road geometry; display stop sequence only.",
+          "status": "unavailable"
+        },
+        "solver_status": "not_run",
+        "student_count": 8,
+        "distance_metres": null,
+        "driving_seconds": null,
+        "provider_source": {
+          "provider": "unavailable",
+          "costs_computed": false,
+          "distance_source": "haversine_straight_line",
+          "duration_source": "unavailable",
+          "requested_provider": "simulation",
+          "distance_is_approximate": true
+        },
+        "service_seconds": null,
+        "waiting_seconds": null,
+        "assignment_policy": "PP1 fixed registered vehicle assignments; no reassignment or dropped active students.",
+        "feasibility_status": "invalid_input",
+        "solver_runtime_seconds": null,
+        "total_duration_seconds": null,
+        "roster_version": 0,
+        "current_roster_version": 0,
+        "is_current": false,
+        "planning_status": "invalid_input",
+        "planning_errors": [
+          "Unconfirmed or missing landmark/depot/school coordinates; review pins. No coordinates were invented."
+        ],
+        "trigger_event_id": null,
+        "trigger_event": "manual_generation",
+        "execution_status": "pre_trip",
+        "comparison": {},
+        "route_id": "ROUTE_a9659f22a25c447fa988537d353978a3",
+        "version": 1,
+        "vehicle_id": "MALABE_PP1_VAN_01",
+        "direction": "morning",
+        "service_date": "2026-10-19",
+        "departure_seconds": 21600,
+        "departure": "2026-10-19T06:00:00+05:30",
+        "generated_at": "2026-10-18T19:19:16.147681+05:30",
+        "timezone": "Asia/Colombo",
+        "request_settings": {
+          "provider": "simulation",
+          "direction": "morning",
+          "vehicle_id": "MALABE_PP1_VAN_01",
+          "service_date": "2026-10-19",
+          "weather_flag": null,
+          "fallback_policy": "ml",
+          "include_geometry": false,
+          "traffic_scenario": "normal",
+          "departure_seconds": 21600,
+          "max_route_seconds": 21600,
+          "force_live_failure": false,
+          "simulation_speed_mps": null,
+          "pickup_service_seconds": 30,
+          "delivery_service_seconds": 30,
+          "solver_time_limit_seconds": 2
+        },
+        "stops": []
+      },
+      "attendance": {
+        "rows": [
+          {
+            "student_id": "MALABE_PP1_TEST_01",
+            "external_id": "TEST_01",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_02",
+            "external_id": "TEST_02",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_03",
+            "external_id": "TEST_03",
+            "am": "yes",
+            "pm": "no",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_04",
+            "external_id": "TEST_04",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_05",
+            "external_id": "TEST_05",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_06",
+            "external_id": "TEST_06",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_07",
+            "external_id": "TEST_07",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_08",
+            "external_id": "TEST_08",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          }
+        ],
+        "unknown_attendance": [],
+        "unresolved_boarding": [],
+        "unresolved_afternoon_only": [],
+        "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence."
+      },
+      "publication": "draft",
+      "review": {},
+      "publication_blockers": [
+        "A current feasible dated route with confirmed locations is required."
+      ]
+    },
+    "afternoon": {
+      "route": {
+        "daily": {
+          "attendance": {
+            "rows": [
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_01",
+                "external_id": "TEST_01",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_02",
+                "external_id": "TEST_02",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "no",
+                "eligible": false,
+                "student_id": "MALABE_PP1_TEST_03",
+                "external_id": "TEST_03",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_04",
+                "external_id": "TEST_04",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_05",
+                "external_id": "TEST_05",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_06",
+                "external_id": "TEST_06",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_07",
+                "external_id": "TEST_07",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              },
+              {
+                "am": "yes",
+                "pm": "yes",
+                "eligible": true,
+                "student_id": "MALABE_PP1_TEST_08",
+                "external_id": "TEST_08",
+                "exclusion_reason": null,
+                "morning_evidence": "unknown",
+                "boarding_event_id": null,
+                "attendance_event_id": "MALABE_SETUP_v1"
+              }
+            ],
+            "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+            "unknown_attendance": [],
+            "unresolved_boarding": [
+              "MALABE_PP1_TEST_01",
+              "MALABE_PP1_TEST_02",
+              "MALABE_PP1_TEST_04",
+              "MALABE_PP1_TEST_05",
+              "MALABE_PP1_TEST_06",
+              "MALABE_PP1_TEST_07",
+              "MALABE_PP1_TEST_08"
+            ],
+            "unresolved_afternoon_only": []
+          },
+          "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence.",
+          "scenario_id": "MALABE_PP1"
+        },
+        "errors": [
+          "Unconfirmed or missing landmark/depot/school coordinates; review pins. No coordinates were invented."
+        ],
+        "capacity": 20,
+        "optimality": "No global optimum is claimed.",
+        "road_geometry": {
+          "reason": "This estimate has no configured road geometry; display stop sequence only.",
+          "status": "unavailable"
+        },
+        "solver_status": "not_run",
+        "student_count": 7,
+        "distance_metres": null,
+        "driving_seconds": null,
+        "provider_source": {
+          "provider": "unavailable",
+          "costs_computed": false,
+          "distance_source": "haversine_straight_line",
+          "duration_source": "unavailable",
+          "requested_provider": "simulation",
+          "distance_is_approximate": true
+        },
+        "service_seconds": null,
+        "waiting_seconds": null,
+        "assignment_policy": "PP1 fixed registered vehicle assignments; no reassignment or dropped active students.",
+        "feasibility_status": "invalid_input",
+        "solver_runtime_seconds": null,
+        "total_duration_seconds": null,
+        "roster_version": 0,
+        "current_roster_version": 0,
+        "is_current": false,
+        "planning_status": "invalid_input",
+        "planning_errors": [
+          "Unconfirmed or missing landmark/depot/school coordinates; review pins. No coordinates were invented."
+        ],
+        "trigger_event_id": null,
+        "trigger_event": "dated_landmark_input",
+        "execution_status": "pre_trip",
+        "comparison": {},
+        "route_id": "ROUTE_6864251571ee4f8e88503dfbcf36ee99",
+        "version": 2,
+        "vehicle_id": "MALABE_PP1_VAN_01",
+        "direction": "afternoon",
+        "service_date": "2026-10-19",
+        "departure_seconds": 48600,
+        "departure": "2026-10-19T13:30:00+05:30",
+        "generated_at": "2026-10-18T19:44:21.096706+05:30",
+        "timezone": "Asia/Colombo",
+        "request_settings": {
+          "provider": "simulation",
+          "direction": "afternoon",
+          "vehicle_id": "MALABE_PP1_VAN_01",
+          "service_date": "2026-10-19",
+          "weather_flag": null,
+          "fallback_policy": "ml",
+          "include_geometry": false,
+          "traffic_scenario": "normal",
+          "departure_seconds": 48600,
+          "max_route_seconds": 21600,
+          "force_live_failure": false,
+          "simulation_speed_mps": null,
+          "pickup_service_seconds": 30,
+          "delivery_service_seconds": 30,
+          "solver_time_limit_seconds": 2
+        },
+        "stops": []
+      },
+      "attendance": {
+        "rows": [
+          {
+            "student_id": "MALABE_PP1_TEST_01",
+            "external_id": "TEST_01",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_02",
+            "external_id": "TEST_02",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_03",
+            "external_id": "TEST_03",
+            "am": "yes",
+            "pm": "no",
+            "morning_evidence": "unknown",
+            "eligible": false,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_04",
+            "external_id": "TEST_04",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_05",
+            "external_id": "TEST_05",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_06",
+            "external_id": "TEST_06",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_07",
+            "external_id": "TEST_07",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          },
+          {
+            "student_id": "MALABE_PP1_TEST_08",
+            "external_id": "TEST_08",
+            "am": "yes",
+            "pm": "yes",
+            "morning_evidence": "unknown",
+            "eligible": true,
+            "exclusion_reason": null,
+            "attendance_event_id": "MALABE_SETUP_v1",
+            "boarding_event_id": null
+          }
+        ],
+        "unknown_attendance": [],
+        "unresolved_boarding": [
+          "MALABE_PP1_TEST_01",
+          "MALABE_PP1_TEST_02",
+          "MALABE_PP1_TEST_04",
+          "MALABE_PP1_TEST_05",
+          "MALABE_PP1_TEST_06",
+          "MALABE_PP1_TEST_07",
+          "MALABE_PP1_TEST_08"
+        ],
+        "unresolved_afternoon_only": [],
+        "provenance": "Landmark locations with demonstration assignments and test attendance; not student homes, measured trips or physical boarding evidence."
+      },
+      "publication": "draft",
+      "review": {},
+      "publication_blockers": [
+        "A current feasible dated route with confirmed locations is required."
+      ]
+    }
+  },
+  "vehicle": {
+    "id": "MALABE_PP1_VAN_01",
+    "input_source": "simulated",
+    "capacity": 20,
+    "start_address": "SALT EduWay, 488/2 Lake Road, Averihena, Hokandara, South, Battaramulla 10118",
+    "start_latitude": null,
+    "start_longitude": null,
+    "start_confirmed": false,
+    "start_method": "manual",
+    "end_address": "SALT EduWay, 488/2 Lake Road, Averihena, Hokandara, South, Battaramulla 10118",
+    "end_latitude": null,
+    "end_longitude": null,
+    "end_confirmed": false,
+    "end_method": "manual"
+  },
+  "schools": [
+    {
+      "id": "MALABE_PP1_SCH_A",
+      "input_source": "simulated",
+      "name": "Horizon College International",
+      "morning_deadline_seconds": 26100,
+      "afternoon_finish_seconds": 48600,
+      "address": "482/B Millennium Dr, Malabe 10115",
+      "latitude": null,
+      "longitude": null,
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_SCH_B",
+      "input_source": "simulated",
+      "name": "Boys' Model College",
+      "morning_deadline_seconds": 26100,
+      "afternoon_finish_seconds": 48600,
+      "address": "391 Kaduwela Rd, Malabe 10115",
+      "latitude": 6.903543,
+      "longitude": 79.957162,
+      "location_confirmed": false,
+      "location_method": "manual"
+    }
+  ],
+  "students": [
+    {
+      "id": "MALABE_PP1_TEST_01",
+      "input_source": "simulated",
+      "name": "TEST_01 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_01_LOCATION",
+      "school_id": "MALABE_PP1_SCH_A",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "Rampe Kitchen, 318 4kaduwela rd, Malabe 10115",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_02",
+      "input_source": "simulated",
+      "name": "TEST_02 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_02_LOCATION",
+      "school_id": "MALABE_PP1_SCH_A",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "Shoe Labz X Enzon, Junction, New Kandy Rd, Malabe",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_03",
+      "input_source": "simulated",
+      "name": "TEST_03 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_03_LOCATION",
+      "school_id": "MALABE_PP1_SCH_A",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "CINEC Campus (Pvt) Ltd, IT Park, Millennium Dr, Malabe",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_04",
+      "input_source": "simulated",
+      "name": "TEST_04 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_04_LOCATION",
+      "school_id": "MALABE_PP1_SCH_A",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "Datha's Boarding Place, WX7C+M39, Pasan Mawatha, Malabe",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_05",
+      "input_source": "simulated",
+      "name": "TEST_05 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_05_LOCATION",
+      "school_id": "MALABE_PP1_SCH_B",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "SkyLights 3D Cinema, 471/E Athurugiriya Rd, Malabe",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_06",
+      "input_source": "simulated",
+      "name": "TEST_06 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_06_LOCATION",
+      "school_id": "MALABE_PP1_SCH_B",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "Keells - Pittugala, 296 Kaduwela Rd, Malabe",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_07",
+      "input_source": "simulated",
+      "name": "TEST_07 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_07_LOCATION",
+      "school_id": "MALABE_PP1_SCH_B",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "Sri Lanka Institute of Information Technology, SLIIT Malabe Campus, New Kandy Rd, Malabe 10115",
+      "location_confirmed": false,
+      "location_method": "manual"
+    },
+    {
+      "id": "MALABE_PP1_TEST_08",
+      "input_source": "simulated",
+      "name": "TEST_08 \u2014 landmark test",
+      "home_id": "MALABE_PP1_TEST_08_LOCATION",
+      "school_id": "MALABE_PP1_SCH_B",
+      "vehicle_id": "MALABE_PP1_VAN_01",
+      "home_latitude": null,
+      "home_longitude": null,
+      "active": true,
+      "home_address": "GRAPHIC HEART STAMPS, 255/3, Malabe 10115",
+      "location_confirmed": false,
+      "location_method": "manual"
+    }
+  ]
+}

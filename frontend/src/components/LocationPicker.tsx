@@ -14,8 +14,8 @@ export function validLocation(location: LocationDraft) {
 export const emptyLocation = (): LocationDraft => ({ address: '', latitude: '', longitude: '', confirmed: false, method: 'manual' });
 const control = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2D9CDB]/40';
 
-export function LocationPicker({ value, onChange, disabled = false, source = 'simulated', home = true }: {
-  value: LocationDraft; onChange: (value: LocationDraft) => void; disabled?: boolean; source?: InputSource; home?: boolean;
+export function LocationPicker({ value, onChange, disabled = false, source = 'simulated', home = true, landmarkTest = false }: {
+  value: LocationDraft; onChange: (value: LocationDraft) => void; disabled?: boolean; source?: InputSource; home?: boolean; landmarkTest?:boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export function LocationPicker({ value, onChange, disabled = false, source = 'si
       <label><span className="text-sm font-medium text-slate-600 mb-1.5 block">{home ? 'Home latitude' : 'Latitude'}</span><input required type="number" step="any" min={-90} max={90} disabled={disabled} value={value.latitude} onChange={(event) => manualChange({ latitude: event.target.value })} className={control} /></label>
       <label><span className="text-sm font-medium text-slate-600 mb-1.5 block">{home ? 'Home longitude' : 'Longitude'}</span><input required type="number" step="any" min={-180} max={180} disabled={disabled} value={value.longitude} onChange={(event) => manualChange({ longitude: event.target.value })} className={control} /></label>
     </div>
-    <RouteMap points={points} editable={!disabled && !loading} height={300} onPositionChange={(latitude, longitude) => manualChange({ latitude: latitude.toFixed(7), longitude: longitude.toFixed(7) })} />
+    <RouteMap landmarkTest={landmarkTest} points={points} editable={!disabled && !loading} height={300} onPositionChange={(latitude, longitude) => manualChange({ latitude: latitude.toFixed(7), longitude: longitude.toFixed(7) })} />
     <p className="text-xs text-slate-500">Location method: {value.method === 'google' ? 'Google automatic geocoding result' : value.method === 'manual_correction' ? 'Manually corrected after geocoding' : 'Manual coordinates / pin placement'}. Location input: {value.method === 'google' ? 'live provider' : source.replace('_', ' ')}. {hasCoordinates ? '' : 'The regional map view is not a selected location.'}</p>
     <label className="flex gap-2 items-start text-sm text-slate-700"><input type="checkbox" checked={value.confirmed} disabled={disabled || loading || !validLocation(value)} onChange={(event) => onChange({ ...value, confirmed: event.target.checked })} className="mt-1" />
       <span>I confirm this address and pin position are correct.</span>
