@@ -4,9 +4,9 @@ import type { MapPoint, StoredRoute } from './api';
 export function routePoints(route: StoredRoute): MapPoint[] {
   return route.stops.map((stop) => ({ id: `${route.route_id}:${stop.sequence}`, location_id: stop.event_id,
     name: stop.name, kind: stop.action === 'start' ? 'vehicle_start' : stop.action === 'end' ? 'vehicle_end' :
-      (route.direction === 'morning' ? stop.action === 'pickup' : stop.action === 'delivery') ? 'home' : 'school',
+      route.research_journey ? 'landmark' : (route.direction === 'morning' ? stop.action === 'pickup' : stop.action === 'delivery') ? 'home' : 'school',
     latitude: stop.latitude, longitude: stop.longitude, address: stop.address, input_source: stop.input_source,
-    location_method: stop.location_method, action: stop.action, student_id: stop.student_id, eta: stop.eta, load_after: stop.load_after }));
+    location_method: stop.location_method, action: stop.action, student_id: stop.student_id, eta: stop.eta ?? undefined, load_after: stop.load_after }));
 }
 
 export function localPlanningDate() {

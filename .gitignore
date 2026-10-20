@@ -28,6 +28,9 @@
 !.env.example
 *.pem
 *.key
+*.crt
+*.cer
+*.der
 *.p12
 *.pfx
 *.jks
@@ -69,6 +72,7 @@
 **/private_data/
 **/real_data/
 **/measured_data/
+**/private-reviewed-*.json
 /private/
 /datasets/
 *.csv
@@ -101,3 +105,10 @@ Thumbs.db
 # Project ZIP copies
 /Safe_Ride_LK.zip
 /SafeRide-LK.zip
+
+# Private exports and local certificate directories (including JSON exports).
+**/exports/
+**/gps_exports/
+**/research_exports/
+**/certs/
+**/.certs/

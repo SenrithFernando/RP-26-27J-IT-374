@@ -91,6 +91,8 @@ def scope_route(session,p,route_id):
     route=session.get(RouteVersion,route_id)
     if not route:raise HTTPException(404,'Resource not found.')
     scope_vehicle(session,p,route.vehicle_id)
+    research=route.input_snapshot.get('research_journey')
+    if research and (p.login.mode!='real' or (p.user.role=='driver' and research.get('driver_id')!=p.user.id)):deny()
     sources=list(snapshot_sources(route.input_snapshot))
     if p.login.mode=='demo' and (not sources or set(sources)!={'simulated'}):deny()
     return route
@@ -104,7 +106,12 @@ def scope_trip(session,p,trip_id):
 
 
 async def authorize(request:Request,credential:HTTPAuthorizationCredentials|None=Depends(bearer),session:Session=Depends(session_dependency)):
-    body=await request.json() if request.method in ('POST','PUT','PATCH') and request.headers.get('content-type','').startswith('application/json') else {}
+    body={}
+    if request.method in ('POST','PUT','PATCH') and request.headers.get('content-type','').startswith('application/json'):
+        raw=await request.body()
+        if raw.strip():
+            try:body=await request.json()
+            except ValueError:raise HTTPException(422,'Malformed JSON request body.') from None
     # Row-lock waits must never block the event loop: an earlier request may
     # need that loop to finish and release the very same transaction lock.
     return await run_in_threadpool(authorize_sync,request,credential,session,body)
@@ -160,11 +167,14 @@ def authorize_sync(request,credential,session,body):
                 if not sources or set(sources)!={'simulated'}:deny()
         elif student_id:scope_student(session,p,student_id)
         return
+    if path in ('/routes/published','/research-routes/current') and method=='GET':
+        scope_vehicle(session,p,request.query_params.get('vehicle_id'))
+        return
     if path in ('/routes/latest','/trips/current'):
         vehicle_id=request.query_params.get('vehicle_id');scope_vehicle(session,p,vehicle_id)
         direction=request.query_params.get('direction')
         if path=='/routes/latest':
-            route=session.scalar(select(RouteVersion).where(RouteVersion.vehicle_id==vehicle_id,RouteVersion.direction==direction).order_by(RouteVersion.version.desc()).limit(1))
+            route=session.scalar(select(RouteVersion).where(RouteVersion.vehicle_id==vehicle_id,RouteVersion.direction==direction,RouteVersion.input_snapshot['research_journey'].is_(None)).order_by(RouteVersion.version.desc()).limit(1))
             if route:scope_route(session,p,route.id)
         else:
             query=select(Trip).where(Trip.vehicle_id==vehicle_id)
@@ -195,6 +205,7 @@ def authorize_sync(request,credential,session,body):
             if body.get('trip_id'):
                 trip=scope_trip(session,p,body['trip_id'])
                 if trip.vehicle_id!=vehicle.id:deny()
+                if session.get(RouteVersion,trip.route_id).input_snapshot.get('research_journey'):raise HTTPException(422,'Adult research uses the authorized operator phone endpoint only, never simulation replay.')
                 if trip.state!='ACTIVE':raise HTTPException(409,'Simulation trip is not active; queued samples rejected.')
         return
     # Everything else is administrator-only, including transport mutations,

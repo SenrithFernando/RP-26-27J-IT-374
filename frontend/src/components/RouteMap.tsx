@@ -17,8 +17,8 @@ export interface RouteMapProps {
   editable?: boolean;
   onPositionChange?: (latitude: number, longitude: number) => void;
 }
-const colors = { home: '#176B87', school: '#7c3aed', vehicle_start: '#15803d', vehicle_end: '#c2410c' };
-const names = { home: 'Student home', school: 'School', vehicle_start: 'Vehicle start', vehicle_end: 'Vehicle end' };
+const colors = { home: '#176B87', school: '#7c3aed', landmark:'#176B87',vehicle_start: '#15803d', vehicle_end: '#c2410c' };
+const names = { home: 'Student home', school: 'School',landmark:'Adult research landmark', vehicle_start: 'Vehicle start', vehicle_end: 'Vehicle end' };
 const methods = { manual: 'Manually entered / pinned', google: 'Google geocoding result', manual_correction: 'Manually corrected after geocoding' };
 
 function MapBehavior({ positions, onPositionChange }: { positions: LatLngTuple[]; onPositionChange?: RouteMapProps['onPositionChange'] }) {

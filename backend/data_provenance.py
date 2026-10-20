@@ -54,6 +54,8 @@ def position_exclusion_reason(session, position):
     vehicle = session.get(Vehicle, position.vehicle_id)
     if not trip or not vehicle or trip.vehicle_id != position.vehicle_id:
         return "invalid_trip_vehicle"
+    if (trip.pickup_settings or {}).get('adult_phone_field_test'):
+        return 'adult_landmark_field_test_not_measured_student_trip'
     if vehicle.input_source == "simulated" or re.match(r"^(?:S[4-8]|S9[A-E]|PP1)_", vehicle.id):
         return "synthetic_vehicle_context"
     route = session.get(RouteVersion, trip.route_id)

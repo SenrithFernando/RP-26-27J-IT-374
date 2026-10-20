@@ -5,7 +5,7 @@ from math import isfinite
 from pathlib import Path
 from threading import Lock
 import numpy as np
-from ml.features import (DISCLAIMER, SCHEMA_VERSION, baseline_predict, feature_record, transform)
+from ml.features import (DISCLAIMER, SCHEMA_VERSION, FEATURE_SCHEMA, NUMERIC, CATEGORICAL, baseline_predict, feature_record, transform)
 
 ARTIFACTS = Path(__file__).resolve().parent / 'artifacts'
 
@@ -37,7 +37,7 @@ class TravelTimePredictor:
                     raise ValueError('Invalid artifact version.')
                 directory = self.artifacts / version
                 metadata = json.loads((directory / 'metadata.json').read_text(encoding='utf-8'))
-                if metadata['model_version'] != version or metadata['feature_schema']['version'] != SCHEMA_VERSION or metadata['data_source'] != 'synthetic':
+                if metadata['model_version'] != version or metadata['feature_schema'] != FEATURE_SCHEMA or metadata['data_source'] != 'synthetic':
                     raise ValueError('Metadata/schema mismatch.')
                 for name in ('model.json', 'preprocessing.json', 'baseline.json', 'metrics.json'):
                     if sha256((directory / name).read_bytes()).hexdigest() != metadata['files_sha256'][name]:
@@ -47,16 +47,25 @@ class TravelTimePredictor:
                 metrics = json.loads((directory / 'metrics.json').read_text(encoding='utf-8'))
                 if metrics['model_version'] != version or preprocessing['schema_version'] != SCHEMA_VERSION:
                     raise ValueError('Artifact versions differ.')
+                categories=preprocessing['categories']
+                if set(categories)!=set(CATEGORICAL) or any(not isinstance(categories[k],list) or any(not isinstance(x,str) for x in categories[k]) or categories[k]!=sorted(set(categories[k])) for k in CATEGORICAL):
+                    raise ValueError('Preprocessing layout mismatch.')
+                if metrics['feature_schema']!=FEATURE_SCHEMA or metrics['data_source']!='synthetic' or metrics['final_test']['train']!=metadata['training_range'] or metrics['final_test']['evaluation']!=metadata['test_range']:
+                    raise ValueError('Evaluation metadata mismatch.')
+                if any(not isfinite(v) or v<=0 for v in [baseline['unseen_segment_fallback'],*baseline['segment_means'].values()]):
+                    raise ValueError('Invalid baseline.')
                 model = XGBRegressor(); model.load_model(directory / 'model.json')
+                if model.get_booster().num_features()!=len(NUMERIC)+sum(len(categories[k]) for k in CATEGORICAL):
+                    raise ValueError('Model/preprocessing feature count mismatch.')
                 self.model, self.metadata, self.preprocessing, self.baseline, self.metrics = model, metadata, preprocessing, baseline, metrics
                 self.error = None
             except FileNotFoundError:
-                self.error = 'Model artifacts missing. Run ml/train_model.py and restart FastAPI.'
+                self.error = 'Model artifacts missing. Restore the verified model bundle and restart FastAPI.'
             except ImportError:
                 self.error = 'XGBoost dependency unavailable in this Python environment.'
             except Exception:
                 self.model = None
-                self.error = 'Model artifacts invalid or incompatible. Retrain and restart FastAPI.'
+                self.error = 'Model artifacts invalid or incompatible. Restore the verified model bundle and restart FastAPI.'
             return self.status()
 
     def status(self):
@@ -64,7 +73,8 @@ class TravelTimePredictor:
                 'reason': self.error, 'model_version': self.metadata['model_version'] if self.model is not None else None,
                 'training_data_source': 'synthetic' if self.model is not None else None,
                 'disclaimer': DISCLAIMER, 'feature_schema': self.metadata['feature_schema'] if self.model is not None else None,
-                'final_test': self.metrics['final_test'] if self.model is not None else None}
+                'final_test': self.metrics['final_test'] if self.model is not None else None,
+                'evaluation': {key:self.metrics[key] for key in ('sample_counts','validation_method','parameter_selection','walk_forward','walk_forward_aggregate','final_test')} if self.model is not None else None}
 
     def predict_many(self, requests):
         if self.model is None: raise ModelUnavailable(self.error)

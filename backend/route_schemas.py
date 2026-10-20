@@ -12,6 +12,9 @@ class GenerateRouteRequest(BaseModel):
     direction: Direction
     service_date: date = Field(default_factory=lambda: datetime.now(ZoneInfo("Asia/Colombo")).date())
     departure_seconds: int = Field(ge=0, lt=86400, strict=True)
+    departure_mode: Literal['fixed','recommend','override'] = 'fixed'
+    recommendation_live_budget: int = Field(default=0,ge=0,le=4,strict=True)
+    live_http_budget: int | None = Field(default=None,ge=0,le=8,strict=True)
     pickup_service_seconds: int = Field(default=30, ge=0, le=3600, strict=True)
     delivery_service_seconds: int = Field(default=30, ge=0, le=3600, strict=True)
     max_route_seconds: int = Field(default=21600, ge=1, le=86400, strict=True)
@@ -33,6 +36,10 @@ class GenerateRouteRequest(BaseModel):
 
     @model_validator(mode='after')
     def distinct_provider_settings(self):
+        if self.departure_mode != 'fixed' and self.direction != 'morning':
+            raise ValueError('Departure recommendations/overrides apply to morning only.')
+        if self.departure_mode == 'recommend' and self.provider == 'google' and not self.recommendation_live_budget:
+            raise ValueError('Google recommendation search requires an explicit live matrix budget (1–4); no request made.')
         if self.provider != 'simulation' and self.simulation_speed_mps is not None:
             raise ValueError('simulation_speed_mps must be null except for simulation.')
         if self.provider != 'simulation' and self.traffic_scenario != 'normal':
@@ -49,6 +56,7 @@ class SchoolSchedule(BaseModel):
 
 
 class GeneratedRouteResponse(BaseModel):
+    departure_recommendation: dict | None = None
     daily: dict | None = None
     warnings: list[str] = []
     preferred_buffer_met: bool | None = None

@@ -37,6 +37,16 @@ class TrafficSnapshotProvider:
     def __init__(self, request, live=None, model=predictor, baseline=baseline_repository):
         self.request, self.live, self.model, self.baseline = request, live or GoogleRoutesAdapter(), model, baseline
         self.reference_stops = None
+        self.live_http_requests=0
+        if request.provider=='google':
+            from traffic_google import ProviderFailure
+            transport=self.live.transport
+            def bounded_transport(*args):
+                if request.live_http_budget is not None and self.live_http_requests>=request.live_http_budget:
+                    raise ProviderFailure('explicit_request_budget','Administrator HTTP request budget exhausted; live pairs unavailable.')
+                self.live_http_requests+=1
+                return transport(*args)
+            self.live.transport=bounded_transport
 
     def precompute(self, coordinates, direction, departure_seconds):
         request = self.request
@@ -115,6 +125,9 @@ class TrafficSnapshotProvider:
             matrix_source_counts=dict(counts), has_unavailable_pairs=any(v is None for row in durations for v in row),
             fallback_reasons=sorted({item['fallback_reason'] or item['unavailable_reason'] for row in sources for item in row if item['fallback_reason'] or item['unavailable_reason']}),
             model_version=self.model.metadata['model_version'] if ml_costs else self.baseline.version if 'historical_baseline' in counts else None,
+            live_http_requests=self.live_http_requests,live_http_budget=request.live_http_budget,
+            matrix_contains_mixed_sources=len(actual)>1,
+            matrix_failure_counts=dict(Counter(item['failure_code'] for row in sources for item in row if item.get('failure_code'))),
             training_data_source='synthetic' if any(source in counts for source in ('ml_prediction','historical_baseline')) else None,
             warnings=ml_costs.metadata.get('warnings', []) if ml_costs else [], description=DISCLAIMER if ml_costs else 'Source-labelled traffic planning estimates; not measured journeys.')
         fingerprint = [durations, distances, sources, [(c.location_id,c.latitude,c.longitude) for c in coordinates], stamp.isoformat(), request.traffic_scenario]

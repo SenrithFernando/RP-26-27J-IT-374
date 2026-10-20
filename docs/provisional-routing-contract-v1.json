@@ -57,6 +57,13 @@
       "minItems": 1,
       "title": "Records",
       "type": "array"
+    },
+    "geocoding_http_budget": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "default": 0,
+      "description": "Explicit per-event provider lookup budget. Zero makes no paid lookup; changed addresses remain pending review. Duplicates never repeat lookup."
     }
   },
   "required": [
@@ -72,7 +79,7 @@
   "title": "Envelope",
   "type": "object",
   "$id": "saferide-routing-provisional-v1",
-  "description": "Our provisional adapter contract, not Hasara API. Only isolated landmark_test data accepted.",
+  "description": "Provisional contract, not Hasara existing API. PM boarding accepts exactly one manual_test record. Delayed evidence requires explicit review, preserving event/alert history.",
   "$defs": {
     "AttendanceRecord": {
       "additionalProperties": false,
@@ -415,6 +422,59 @@
       ],
       "title": "PolicyRecord",
       "type": "object"
+    },
+    "AfternoonBoardingRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "student_external_id": {
+          "title": "Student External Id",
+          "type": "string"
+        },
+        "service_date": {
+          "format": "date",
+          "title": "Service Date",
+          "type": "string"
+        },
+        "direction": {
+          "const": "afternoon",
+          "title": "Direction",
+          "type": "string"
+        },
+        "trip_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Trip Id",
+          "type": "string"
+        },
+        "outcome": {
+          "const": "boarded",
+          "default": "boarded",
+          "title": "Outcome",
+          "type": "string"
+        },
+        "resolves_event_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolves Event Id"
+        }
+      },
+      "required": [
+        "student_external_id",
+        "service_date",
+        "direction",
+        "trip_id"
+      ],
+      "title": "AfternoonBoardingRecord",
+      "type": "object"
     }
   },
   "allOf": [
@@ -448,7 +508,14 @@
         "properties": {
           "records": {
             "items": {
-              "$ref": "#/$defs/BoardingRecord"
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/BoardingRecord"
+                },
+                {
+                  "$ref": "#/$defs/AfternoonBoardingRecord"
+                }
+              ]
             }
           }
         }
@@ -522,6 +589,38 @@
             "items": {
               "$ref": "#/$defs/PolicyRecord"
             }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "boarding"
+          },
+          "records": {
+            "contains": {
+              "properties": {
+                "direction": {
+                  "const": "afternoon"
+                }
+              },
+              "required": [
+                "direction"
+              ]
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "producer": {
+            "const": "manual_test"
+          },
+          "records": {
+            "minItems": 1,
+            "maxItems": 1
           }
         }
       }

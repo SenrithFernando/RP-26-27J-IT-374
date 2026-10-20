@@ -5,7 +5,7 @@ import { MapLoader } from './MapLoader';
 import type { RouteMapProps } from './RouteMap';
 
 export const sourceName = (source?: string) => ({ simulation: 'Simulated traffic', ml_prediction: 'ML prediction · synthetic training',
-  google_live: 'Google traffic-aware estimate', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
+  google_live: 'Google Maps traffic-aware estimate', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
   unavailable: 'Unavailable', geographic_zero: 'Colocated · zero travel', start: 'Vehicle start' }[source ?? ''] ?? source ?? 'Source unavailable');
 
 export function SourceBadge({ source }: { source?: string }) {
@@ -29,22 +29,23 @@ export function AlternativeComparison({ route }: { route: StoredRoute }) {
 }
 
 export function TrafficRouteMap({ route, ...props }: RouteMapProps & { route?: StoredRoute | null }) {
-  const landmarkTest=props.landmarkTest||route?.daily?.scenario_id==='MALABE_PP1';
+  const landmarkTest=props.landmarkTest||route?.daily?.scenario_id==='MALABE_PP1'||!!route?.research_journey;
   const [failedImage, setFailedImage] = useState('');
   const [image,setImage]=useState<{key:string;url:string}|null>(null);
+  const [requestedImage,setRequestedImage]=useState('');
   const geometry = route?.road_geometry;
-  const imageId=!props.vehiclePosition && geometry?.status==='available' && geometry.map_available?route?.route_id:'';
+  const imageId=geometry?.status==='available' && geometry.map_available?route?.route_id:'';
   useEffect(()=>{
     const controller=new AbortController();let alive=true,url='';setImage(null);
-    if(imageId)void fetch(`/api/routes/${encodeURIComponent(imageId)}/map-image`,{headers:authHeaders(),credentials:'omit',signal:controller.signal})
+    if(imageId&&requestedImage===imageId)void fetch(`/api/routes/${encodeURIComponent(imageId)}/map-image`,{headers:authHeaders(),credentials:'omit',signal:controller.signal})
       .then(response=>{if(!response.ok)throw new Error('Map unavailable');return response.blob();})
       .then(blob=>{if(alive){url=URL.createObjectURL(blob);setImage({key:imageId,url});}})
       .catch(()=>{if(alive)setFailedImage(imageId);});
     return()=>{alive=false;controller.abort();if(url)URL.revokeObjectURL(url);};
-  },[imageId]);
-  if (!props.vehiclePosition && route && geometry?.status === 'available' && geometry.map_available && failedImage !== route.route_id) {
-    return <div className="space-y-2">{image?.key===route.route_id?<img src={image.url} alt="Ordered road geometry on a Google Map" className="w-full rounded-xl" onError={() => setFailedImage(route.route_id)} />:<p>Loading authorized map…</p>}
-      <p className="text-xs text-slate-600">Road geometry · Google Maps. {geometry.description}</p>
+  },[imageId,requestedImage]);
+  if (route && geometry?.status === 'available' && geometry.map_available && failedImage !== route.route_id) {
+    return <div className="space-y-2">{requestedImage!==route.route_id?<><button className="underline text-[#176B87]" onClick={()=>setRequestedImage(route.route_id)}>Load Google road map (up to 1 image request)</button><p className="text-xs">Explicit display request; may incur charges. Page loads and polling do not request this image.</p></>:image?.key===route.route_id?<img src={image.url} alt="Ordered road geometry on a Google Map" className="w-full rounded-xl" onError={() => setFailedImage(route.route_id)} />:<p>Loading authorized map…</p>}
+      <p className="text-xs text-slate-600">Road geometry · Google Maps. {geometry.description} Saved road display, not embedded navigation. Live position and stop popups remain in the separate confirmed-locations panel below.</p>
       <details className="text-xs text-slate-500"><summary className="cursor-pointer">Confirmed locations and stop popups</summary><MapLoader {...props} landmarkTest={landmarkTest} orderedStops={[]} /></details>
     </div>;
   }

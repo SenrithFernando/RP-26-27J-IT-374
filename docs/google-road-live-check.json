@@ -1,0 +1,104 @@
+{
+  "verified_at": "2026-10-20T05:26:31.199095+00:00",
+  "budget": 8,
+  "http_requests": 8,
+  "source_roster_date": "2026-10-19",
+  "estimate_date": "2026-10-21",
+  "scope": "Read-only temporary solves using saved source-date attendance; NOT confirmed attendance or saved/published plans for the forecast date.",
+  "results": [
+    {
+      "phase": "two_school_smoke",
+      "success": true,
+      "actual_source": "google_live",
+      "error_codes": [],
+      "http_requests_so_far": 1
+    },
+    {
+      "phase": "normal_morning",
+      "direction": "morning",
+      "feasibility_status": "feasible",
+      "participants": 8,
+      "requested_provider": "google",
+      "actual_source": "google_live",
+      "planned_departure": "2026-10-21T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-20T05:26:26.392303+00:00",
+      "mixed_sources": false,
+      "model_version": null,
+      "fallback_reasons": [],
+      "errors": [],
+      "test_injection": false,
+      "http_requests_so_far": 5
+    },
+    {
+      "phase": "normal_afternoon",
+      "direction": "afternoon",
+      "feasibility_status": "feasible",
+      "participants": 7,
+      "requested_provider": "google",
+      "actual_source": "google_live",
+      "planned_departure": "2026-10-21T13:30:00+05:30",
+      "estimate_timestamp": "2026-10-20T05:26:27.801793+00:00",
+      "mixed_sources": false,
+      "model_version": null,
+      "fallback_reasons": [],
+      "errors": [],
+      "test_injection": false,
+      "http_requests_so_far": 6
+    },
+    {
+      "phase": "controlled_fallback",
+      "direction": "morning",
+      "feasibility_status": "feasible",
+      "participants": 8,
+      "requested_provider": "google",
+      "actual_source": "ml_prediction",
+      "planned_departure": "2026-10-21T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-20T05:26:28.855655+00:00",
+      "mixed_sources": false,
+      "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made."
+      ],
+      "errors": [],
+      "test_injection": true,
+      "http_requests_so_far": 6
+    },
+    {
+      "phase": "missing_model",
+      "direction": "morning",
+      "feasibility_status": "unavailable",
+      "participants": 8,
+      "requested_provider": "google",
+      "actual_source": "unavailable",
+      "planned_departure": "2026-10-21T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-20T05:26:29.859967+00:00",
+      "mixed_sources": false,
+      "model_version": null,
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made. Model artifacts missing. Run ml/train_model.py and restart FastAPI."
+      ],
+      "errors": [
+        "Directed travel estimates unavailable; no route generated. See provider failure codes and fallback reasons; missing estimates do not establish road reachability."
+      ],
+      "test_injection": true,
+      "http_requests_so_far": 6
+    },
+    {
+      "phase": "ordered_geometry",
+      "status": "available",
+      "map_configured": true,
+      "failure_code": null,
+      "stop_order_unchanged": true,
+      "http_requests_so_far": 7
+    },
+    {
+      "phase": "static_map",
+      "status": "success",
+      "bytes": 150999,
+      "png_signature": true,
+      "http_requests_so_far": 8
+    }
+  ],
+  "model_retrained": false,
+  "database_writes": false
+}

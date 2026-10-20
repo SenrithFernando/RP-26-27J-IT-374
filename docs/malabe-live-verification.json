@@ -1,0 +1,242 @@
+{
+  "run_id": "LIVE_VERIFY_41bb201b62a54582b1926fbb95f9a857",
+  "verified_at": "2026-10-18T15:53:15.790056+00:00",
+  "service_date": "2026-10-19",
+  "total_http_request_budget": 9,
+  "actual_http_requests": 5,
+  "results": [
+    {
+      "phase": "two_school_smoke",
+      "success": false,
+      "actual_source": "unavailable",
+      "departure": "2026-10-19T06:00:00+05:30",
+      "provider_errors": [],
+      "http_requests_so_far": 1,
+      "note": "Original assertion required diagonal pairs; Google may omit them. Sanitized cross-pair recheck below corrects the verification assertion, not provider data."
+    },
+    {
+      "phase": "normal_am",
+      "route_id": "ROUTE_e259ba21269e45488f00772005a51df4",
+      "version": 27,
+      "direction": "morning",
+      "feasibility_status": "feasible",
+      "student_count": 6,
+      "requested_provider": "google",
+      "actual_source": "google_live",
+      "planned_departure": "2026-10-19T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-18T15:53:06.611090+00:00",
+      "matrix_contains_mixed_sources": false,
+      "matrix_source_counts": {
+        "google_live": 72
+      },
+      "route_source_counts": {
+        "google_live": 8
+      },
+      "model_version": null,
+      "fallback_reasons": [],
+      "failure_injection_test": false,
+      "errors": [],
+      "live_http_requests": 1,
+      "http_requests_so_far": 2,
+      "persisted_metadata_verified": true,
+      "total_duration_seconds": 3597,
+      "schools": [
+        {
+          "name": "Horizon College International",
+          "action": "delivery",
+          "eta": "2026-10-19T06:34:13+05:30",
+          "departure": "2026-10-19T06:44:13+05:30"
+        },
+        {
+          "name": "Boys' Model College",
+          "action": "delivery",
+          "eta": "2026-10-19T06:49:57+05:30",
+          "departure": "2026-10-19T06:59:57+05:30"
+        }
+      ]
+    },
+    {
+      "phase": "normal_pm",
+      "route_id": "ROUTE_54bde6d15ba5418dafde5305525e551e",
+      "version": 19,
+      "direction": "afternoon",
+      "feasibility_status": "feasible",
+      "student_count": 7,
+      "requested_provider": "google",
+      "actual_source": "google_live",
+      "planned_departure": "2026-10-19T13:30:00+05:30",
+      "estimate_timestamp": "2026-10-18T15:53:09.109632+00:00",
+      "matrix_contains_mixed_sources": false,
+      "matrix_source_counts": {
+        "google_live": 90
+      },
+      "route_source_counts": {
+        "google_live": 9
+      },
+      "model_version": null,
+      "fallback_reasons": [],
+      "failure_injection_test": false,
+      "errors": [],
+      "live_http_requests": 1,
+      "http_requests_so_far": 3,
+      "persisted_metadata_verified": true,
+      "total_duration_seconds": 5404,
+      "schools": [
+        {
+          "name": "Boys' Model College",
+          "action": "pickup",
+          "eta": "2026-10-19T13:30:00+05:30",
+          "departure": "2026-10-19T13:45:00+05:30"
+        },
+        {
+          "name": "Horizon College International",
+          "action": "pickup",
+          "eta": "2026-10-19T13:57:56+05:30",
+          "departure": "2026-10-19T14:12:56+05:30"
+        }
+      ]
+    },
+    {
+      "phase": "controlled_adapter_failure",
+      "route_id": "ROUTE_029f4f6bd95648db85e2766f901e38ae",
+      "version": 28,
+      "direction": "morning",
+      "feasibility_status": "feasible",
+      "student_count": 6,
+      "requested_provider": "google",
+      "actual_source": "ml_prediction",
+      "planned_departure": "2026-10-19T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-18T15:53:11.220053+00:00",
+      "matrix_contains_mixed_sources": false,
+      "matrix_source_counts": {
+        "ml_prediction": 72
+      },
+      "route_source_counts": {
+        "ml_prediction": 8
+      },
+      "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made."
+      ],
+      "failure_injection_test": true,
+      "errors": [],
+      "live_http_requests": 0,
+      "http_requests_so_far": 3,
+      "persisted_metadata_verified": true,
+      "total_duration_seconds": 2973,
+      "schools": [
+        {
+          "name": "Boys' Model College",
+          "action": "delivery",
+          "eta": "2026-10-19T06:25:14+05:30",
+          "departure": "2026-10-19T06:35:14+05:30"
+        },
+        {
+          "name": "Horizon College International",
+          "action": "delivery",
+          "eta": "2026-10-19T06:39:33+05:30",
+          "departure": "2026-10-19T06:49:33+05:30"
+        }
+      ]
+    },
+    {
+      "phase": "controlled_failure_missing_model",
+      "route_id": "ROUTE_6a26c8de9df0482b9f297f08a3b626cb",
+      "version": 29,
+      "direction": "morning",
+      "feasibility_status": "unavailable",
+      "student_count": 6,
+      "requested_provider": "google",
+      "actual_source": "unavailable",
+      "planned_departure": "2026-10-19T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-18T15:53:13.282241+00:00",
+      "matrix_contains_mixed_sources": false,
+      "matrix_source_counts": {
+        "unavailable": 72
+      },
+      "route_source_counts": null,
+      "model_version": null,
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made. Model artifacts missing. Run ml/train_model.py and restart FastAPI."
+      ],
+      "failure_injection_test": true,
+      "errors": [
+        "Unreachable pair 0 -> 1; generation rejected."
+      ],
+      "live_http_requests": 0,
+      "http_requests_so_far": 3,
+      "persisted_metadata_verified": true,
+      "total_duration_seconds": null,
+      "schools": []
+    },
+    {
+      "phase": "normal_operation_restored",
+      "route_id": "ROUTE_1041bfaa2b3745ff8773d0043e81c624",
+      "version": 30,
+      "direction": "morning",
+      "feasibility_status": "feasible",
+      "student_count": 6,
+      "requested_provider": "google",
+      "actual_source": "google_live",
+      "planned_departure": "2026-10-19T06:00:00+05:30",
+      "estimate_timestamp": "2026-10-18T15:53:13.721437+00:00",
+      "matrix_contains_mixed_sources": false,
+      "matrix_source_counts": {
+        "google_live": 72
+      },
+      "route_source_counts": {
+        "google_live": 8
+      },
+      "model_version": null,
+      "fallback_reasons": [],
+      "failure_injection_test": false,
+      "errors": [],
+      "live_http_requests": 1,
+      "http_requests_so_far": 4,
+      "persisted_metadata_verified": true,
+      "total_duration_seconds": 3597,
+      "schools": [
+        {
+          "name": "Horizon College International",
+          "action": "delivery",
+          "eta": "2026-10-19T06:34:13+05:30",
+          "departure": "2026-10-19T06:44:13+05:30"
+        },
+        {
+          "name": "Boys' Model College",
+          "action": "delivery",
+          "eta": "2026-10-19T06:49:57+05:30",
+          "departure": "2026-10-19T06:59:57+05:30"
+        }
+      ]
+    },
+    {
+      "phase": "two_school_smoke_cross_pair_recheck",
+      "success": true,
+      "actual_source": "google_live",
+      "returned_pairs": 2,
+      "cross_pairs_verified": 2,
+      "provider_errors": [],
+      "http_requests": 1,
+      "checked_at": "2026-10-18T15:53:56.562883+00:00"
+    }
+  ],
+  "notes": [
+    "Local authorized maintenance execution, not a browser login test.",
+    "New versions are drafts; publication still requires administrator review.",
+    "Departure-time matrix snapshot, not fully time-dependent routing.",
+    "No Google estimates exported as measured observations or training labels."
+  ],
+  "latest_saved_plans": [
+    {
+      "direction": "afternoon",
+      "route_id": "ROUTE_54bde6d15ba5418dafde5305525e551e",
+      "publication": "draft"
+    },
+    {
+      "direction": "morning",
+      "route_id": "ROUTE_1041bfaa2b3745ff8773d0043e81c624",
+      "publication": "draft"
+    }
+  ]
+}

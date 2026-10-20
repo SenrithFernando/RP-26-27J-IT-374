@@ -39,6 +39,7 @@ class RegistrationLocation(Strict):
     @model_validator(mode='after')
     def coordinate_pair(self):
         if (self.latitude is None)!=(self.longitude is None):raise ValueError('Both coordinates required together.')
+        if self.address is not None and len(self.address.strip())<3:raise ValueError('Supply a nonblank address with at least three characters; it is preserved verbatim.')
         return self
 class AttendanceRecord(Strict):
     student_external_id:str
@@ -50,6 +51,13 @@ class BoardingRecord(Strict):
     service_date:date
     direction:Literal['morning']='morning'
     outcome:Literal['boarded','no_show','unknown']
+class AfternoonBoardingRecord(Strict):
+    student_external_id:str
+    service_date:date
+    direction:Literal['afternoon']
+    trip_id:str=Field(min_length=1,max_length=64)
+    outcome:Literal['boarded']='boarded'
+    resolves_event_id:str|None=Field(default=None,min_length=1,max_length=128)
 class AssignmentRecord(RegistrationLocation):
     student_external_id:str
     school_external_id:Literal['SCH_A','SCH_B']
@@ -77,12 +85,19 @@ class Envelope(Strict):
     provenance:Literal['landmark_test']
     kind:Literal['attendance','boarding','assignment','vehicle','school','policy']
     reason:str=Field(min_length=3,max_length=500)
+    geocoding_http_budget:int=Field(default=0,ge=0,le=3,strict=True)
     records:list[dict]=Field(min_length=1,max_length=20)
 class Generation(Strict):
     service_date:date=DEFAULT_DATE
     direction:Literal['morning','afternoon']
     provider:Literal['simulation','ml','google','baseline','unavailable']='simulation'
     departure_seconds:int|None=Field(default=None,ge=0,lt=86400)
+    departure_mode:Literal['fixed','recommend','override']='fixed'
+    recommendation_live_budget:int=Field(default=0,ge=0,le=4)
+    live_http_budget:int=Field(default=0,ge=0,le=8)
+    fallback_policy:Literal['none','ml','ml_then_baseline']='ml'
+    force_live_failure:bool=Field(default=False,strict=True)
+    include_geometry:bool=Field(default=False,strict=True)
 class Publication(Strict):
     service_date:date
     direction:Literal['morning','afternoon']
@@ -183,6 +198,9 @@ def regenerate(session,sc,days,directions=('morning','afternoon')):
                 if state:state.publication='stale'
                 results.append({'direction':direction,'service_date':str(day),'status':'deferred_active_snapshot'});continue
             settings=dict(last.request_settings) if last else dict(vehicle_id=sc.vehicle_id,direction=direction,departure_seconds=21600 if direction=='morning' else 48600,include_geometry=False)
+            if settings.get('provider')=='google':
+                if state:state.publication='stale'
+                results.append({'direction':direction,'service_date':str(day),'status':'explicit_live_verification_required'});continue
             settings['service_date']=day
             try:
                 with session.begin_nested():value=generate_and_store(session,GenerateRouteRequest(**settings),commit=False,trigger_event_type='dated_landmark_input')
@@ -193,17 +211,39 @@ def regenerate(session,sc,days,directions=('morning','afternoon')):
                 results.append({'direction':direction,'service_date':str(day),'status':'routing_failed_inputs_saved'})
     session.commit();return results
 
+def event_clock():return datetime.now(timezone.utc)
+
+
 def import_event(session,envelope,actor):
-    planning_lock(session);sc=scenario(session);body=envelope.model_dump(mode='json');hashed=digest(body)
+    planning_lock(session);sc=scenario(session);body=envelope.model_dump(mode='json')
+    # Preserve hashes of existing v1 events predating the optional budget field.
+    if body['geocoding_http_budget']==0:body.pop('geocoding_http_budget')
+    hashed=digest(body)
     old=session.get(LandmarkInputEvent,envelope.event_id)
     if old:
         if old.payload_hash!=hashed:raise HTTPException(409,'Event ID reused with different content.')
-        return {'duplicate':True,'event_id':old.event_id,'regenerated':[]}
-    if envelope.occurred_at>datetime.now(timezone.utc)+timedelta(seconds=30):raise HTTPException(422,'Event timestamp implausibly future.')
+        from registration_geocoding import counts
+        return {'duplicate':True,'event_id':old.event_id,'regenerated':[],'geocoding_results':old.payload.get('geocoding_results',[]),'geocoding_counts':counts([]),'geocoding_note':'Prior results retained; no repeated provider request.'}
+    if envelope.occurred_at>event_clock()+timedelta(seconds=30):raise HTTPException(422,'Event timestamp implausibly future.')
     types={'attendance':AttendanceRecord,'boarding':BoardingRecord,'assignment':AssignmentRecord,'vehicle':VehicleRecord,'school':SchoolRecord,'policy':PolicyRecord}
-    try:records=[types[envelope.kind].model_validate(r) for r in envelope.records]
+    try:records=[(AfternoonBoardingRecord if envelope.kind=='boarding' and r.get('direction')=='afternoon' else types[envelope.kind]).model_validate(r) for r in envelope.records]
     except ValidationError:raise HTTPException(422,'Invalid provisional contract record; check required fields and enums.') from None
-    days=set();global_change=False;directions=('morning','afternoon');changed=False;seen=set()
+    if any(isinstance(r,AfternoonBoardingRecord) for r in records):
+        if len(records)!=1 or not isinstance(records[0],AfternoonBoardingRecord) or envelope.producer!='manual_test':raise HTTPException(422,'PM test boarding requires exactly one manual_test record; card integration is not connected.')
+        from boarding_evidence import apply_pm_test_evidence
+        result=apply_pm_test_evidence(session,sc,envelope,records[0])
+        session.add(LandmarkInputEvent(event_id=envelope.event_id,scenario_id=sc.id,payload_hash=hashed,payload=body,actor_id=actor,received_at=result.pop('_received_at')))
+        session.commit()
+        return {'duplicate':False,'event_id':envelope.event_id,'changed':result['outcome_changed'],'boarding_result':result,'regenerated':[]}
+    validated=set()
+    for record in records:
+        identity=getattr(record,'student_external_id',getattr(record,'school_external_id',getattr(record,'vehicle_external_id','policy')))
+        key=(str(getattr(record,'service_date','global')),identity)
+        if key in validated:raise HTTPException(422,'Duplicate entity/date in one event.')
+        validated.add(key)
+        if hasattr(record,'student_external_id') and PREFIX+record.student_external_id not in sc.policy['student_ids']:raise HTTPException(422,'Unknown scenario participant; historical fixtures cannot be imported.')
+        if envelope.kind=='school' and record.name!=SCHOOLS[record.school_external_id][0]:raise HTTPException(422,'School mapping is fixed: SCH_A Horizon, SCH_B Boys Model.')
+    days=set();global_change=False;directions=('morning','afternoon');changed=False;seen=set();geocoding_results=[];geocoding_budget=envelope.geocoding_http_budget
     for record in records:
         identity=getattr(record,'student_external_id',getattr(record,'school_external_id',getattr(record,'vehicle_external_id','policy')))
         key=(str(getattr(record,'service_date','global')),identity)
@@ -239,15 +279,13 @@ def import_event(session,envelope,actor):
             if isinstance(record,RegistrationLocation) and (record.address is not None or record.latitude is not None):
                 target=session.get(Student,PREFIX+record.student_external_id) if envelope.kind=='assignment' else session.get(School,PREFIX+record.school_external_id) if envelope.kind=='school' else session.get(Vehicle,sc.vehicle_id)
                 prefixes=['home_'] if envelope.kind=='assignment' else [''] if envelope.kind=='school' else ['start_','end_']
-                for prefix in prefixes:
-                    for name in ['address','latitude','longitude']:
-                        value=getattr(record,name)
-                        if value is not None and getattr(target,prefix+name)!=value:
-                            setattr(target,prefix+name,value);changed=True;global_change=True
-                            setattr(target,{'home_':'location_confirmed','':'location_confirmed','start_':'start_confirmed','end_':'end_confirmed'}[prefix],False)
-                            setattr(target,{'home_':'location_method','':'location_method','start_':'start_method','end_':'end_method'}[prefix],'manual')
-                # Import coordinates are explicitly unconfirmed; admin pin review is separate.
-    session.add(LandmarkInputEvent(event_id=envelope.event_id,scenario_id=sc.id,payload_hash=hashed,payload=body,actor_id=actor,received_at=datetime.now(timezone.utc)))
+                from registration_geocoding import project
+                location_changed,result=project(record,target,prefixes,geocoding_budget,identity)
+                if location_changed:changed=True;global_change=True
+                if result:
+                    geocoding_results.append(result)
+                    if result['attempted']:geocoding_budget-=1
+    session.add(LandmarkInputEvent(event_id=envelope.event_id,scenario_id=sc.id,payload_hash=hashed,payload={**body,'geocoding_results':geocoding_results},actor_id=actor,received_at=event_clock()))
     if global_change:
         session.get(Vehicle,sc.vehicle_id).roster_version+=1
         days.update(session.scalars(select(LandmarkDailyPlan.service_date).where(LandmarkDailyPlan.scenario_id==sc.id)))
@@ -265,7 +303,8 @@ def import_event(session,envelope,actor):
     session.commit()
     from planning_orchestration import process_event_safe
     routing=process_event_safe(session,routing_event_id) if routing_event_id else {'plans':[]}
-    return {'duplicate':False,'event_id':envelope.event_id,'changed':changed,'routing':routing,'regenerated':[{**p,'status':p.get('generation_status')} for p in routing.get('plans',[])]}
+    from registration_geocoding import counts
+    return {'duplicate':False,'event_id':envelope.event_id,'changed':changed,'routing':routing,'geocoding_results':geocoding_results,'geocoding_counts':counts(geocoding_results),'regenerated':[{**p,'status':p.get('generation_status')} for p in routing.get('plans',[])]}
 
 def publication_blockers(session,sc,day,direction,route):
     _,snap=attendance_snapshot(session,sc,day,direction);errors=[]
@@ -290,7 +329,17 @@ def read_daily(service_date:date=DEFAULT_DATE,session:Session=Depends(session_de
         published=state.publication if state else 'not_generated'
         if r and r.input_snapshot.get('daily',{}).get('fingerprint')!=fingerprint(session,sc,service_date,direction):published='stale'
         plans[direction]={'route':serialize_version(session,r) if r else None,'attendance':snap,'publication':published,'review':state.review if state else {},'publication_blockers':blockers}
-    return {'scenario_id':sc.id,'name':sc.policy['name'],'service_date':str(service_date),'default_date':str(sc.default_date),'timezone':'Asia/Colombo','provenance':PROVENANCE,'policy':sc.policy,'counts':counts,'plans':plans,
+    location_imports=[];seen=set()
+    events=session.scalars(select(LandmarkInputEvent).where(LandmarkInputEvent.scenario_id==sc.id,LandmarkInputEvent.payload['geocoding_results'].is_not(None)).order_by(LandmarkInputEvent.received_at.desc()).limit(50))
+    for event in events:
+        for result in event.payload.get('geocoding_results',[]):
+            external=result['external_id']
+            if external in seen:continue
+            seen.add(external)
+            entity=session.get(Student,PREFIX+external) or session.get(School,PREFIX+external) or session.get(Vehicle,PREFIX+external)
+            confirmed=bool(entity and (entity.start_confirmed and entity.end_confirmed if isinstance(entity,Vehicle) else entity.location_confirmed))
+            location_imports.append({**result,'event_id':event.event_id,'current_location_confirmed':confirmed})
+    return {'scenario_id':sc.id,'name':sc.policy['name'],'service_date':str(service_date),'default_date':str(sc.default_date),'timezone':'Asia/Colombo','provenance':PROVENANCE,'policy':sc.policy,'counts':counts,'plans':plans,'location_imports':location_imports,
         'vehicle':PersistedVehicle.model_validate(session.get(Vehicle,sc.vehicle_id)).model_dump(mode='json'),
         'schools':[PersistedSchool.model_validate(session.get(School,k)).model_dump(mode='json') for k in sc.policy['school_ids']],
         'students':[StudentRecord.model_validate(p).model_dump(mode='json') for p in session.scalars(select(Student).where(Student.id.in_(sc.policy['student_ids'])).order_by(Student.id))]}
@@ -299,7 +348,11 @@ def generate_daily(body:Generation,session:Session=Depends(session_dependency)):
     from route_service import generate_and_store
     from route_schemas import GenerateRouteRequest
     sc=scenario(session)
-    return generate_and_store(session,GenerateRouteRequest(vehicle_id=sc.vehicle_id,service_date=body.service_date,direction=body.direction,departure_seconds=body.departure_seconds if body.departure_seconds is not None else 21600 if body.direction=='morning' else 48600,provider=body.provider,include_geometry=False))
+    if body.direction!='morning' and body.departure_mode!='fixed':raise HTTPException(422,'Recommendations apply only to morning.')
+    if body.departure_mode=='recommend' and body.provider=='google' and not body.recommendation_live_budget:raise HTTPException(422,'Set an explicit Google matrix budget (1–4); no request made.')
+    if body.provider=='google' and body.departure_mode!='recommend' and not body.force_live_failure and not body.live_http_budget:raise HTTPException(422,'Set an explicit live HTTP request budget (1–8); no request made.')
+    if body.force_live_failure and body.provider!='google':raise HTTPException(422,'Controlled adapter failure is only valid for Google verification.')
+    return generate_and_store(session,GenerateRouteRequest(vehicle_id=sc.vehicle_id,service_date=body.service_date,direction=body.direction,departure_seconds=body.departure_seconds if body.departure_seconds is not None else 21600 if body.direction=='morning' else 48600,provider=body.provider,include_geometry=body.include_geometry and body.provider=='google' and body.departure_mode!='recommend',departure_mode=body.departure_mode,recommendation_live_budget=body.recommendation_live_budget,live_http_budget=body.live_http_budget if body.provider=='google' and body.departure_mode!='recommend' else None,fallback_policy=body.fallback_policy,force_live_failure=body.force_live_failure))
 @router.post('/publish')
 def publish(body:Publication,request:Request,session:Session=Depends(session_dependency)):
     planning_lock(session);sc=scenario(session);state=session.get(LandmarkDailyPlan,(sc.id,body.service_date,body.direction));route=session.get(RouteVersion,body.route_id)

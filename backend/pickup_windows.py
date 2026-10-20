@@ -61,7 +61,7 @@ def change_window(session,window,state,effective,now,source,reason):
 def change_outcome(session,window,outcome,state,effective,now,source,reason):
     if outcome.state==state: return
     old=outcome.state;outcome.state=state;outcome.changed_at=now;outcome.action_source=source
-    if state=='PICKED_UP': outcome.picked_up_at=now
+    if state=='PICKED_UP': outcome.picked_up_at=effective
     audit(session,window,outcome.student_id,old,state,effective,now,source,reason)
 
 

@@ -1,6 +1,6 @@
 """Static departure-time ML matrix; predictions are fetched before solver callbacks."""
 from datetime import datetime, time, timedelta
-from math import ceil
+from math import ceil,isfinite
 from zoneinfo import ZoneInfo
 from travel_time import DeterministicSimulationProvider, InvalidTravelCosts, TravelCosts
 from ml.features import DISCLAIMER
@@ -29,7 +29,12 @@ class MLTravelTimeProvider:
                 arcs.append((i, j))
         try: predictions = self.model.predict_many(requests)
         except (ModelUnavailable, ValueError) as error: raise InvalidTravelCosts(str(error)) from None
-        for (i, j), result in zip(arcs, predictions): durations[i][j] = ceil(result['duration_s'])
+        if len(predictions)!=len(arcs):raise InvalidTravelCosts('Incomplete ML prediction batch; missing arcs are unavailable, never zero travel.')
+        for (i, j), result in zip(arcs, predictions):
+            value=result.get('duration_s')
+            if isinstance(value,bool) or not isinstance(value,(int,float)) or not isfinite(value) or value<=0:
+                raise InvalidTravelCosts('Invalid ML duration; no matrix is available.')
+            durations[i][j] = ceil(value)
         return TravelCosts(durations, distances, {
             'provider': 'xgboost_synthetic_v1', 'duration_source': 'ml_prediction',
             'training_data_source': 'synthetic', 'model_version': self.model.metadata['model_version'],

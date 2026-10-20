@@ -63,8 +63,14 @@ def post_google(method, body, fields, key, timeout):
             return json.loads(raw)
     except HTTPError as error:
         code = 'quota_exceeded' if error.code == 429 else 'credentials_rejected' if error.code in (401, 403) else 'http_error'
+        if error.code==400:
+            try:
+                message=json.loads(error.read(8192)).get('error',{}).get('message','').lower()
+                code='unsupported_departure' if 'departure' in message and any(w in message for w in ('time','future','past','date')) else 'invalid_request'
+            except (ValueError,AttributeError,TypeError):code='invalid_request'
         error.close()
-        raise ProviderFailure(code, f'Google Routes request failed (HTTP {error.code}).') from None
+        detail=' Requested departure timestamp is unsupported; it was not silently changed.' if code=='unsupported_departure' else ''
+        raise ProviderFailure(code, f'Google Routes request failed (HTTP {error.code}).'+detail) from None
     except (TimeoutError, URLError, OSError): raise ProviderFailure('timeout_or_network', 'Google Routes timed out or the network was unavailable.') from None
     except (ValueError, TypeError): raise ProviderFailure('malformed_response', 'Google Routes returned invalid JSON.') from None
 

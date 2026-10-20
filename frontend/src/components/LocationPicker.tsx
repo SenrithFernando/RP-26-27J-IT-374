@@ -39,7 +39,7 @@ export function LocationPicker({ value, onChange, disabled = false, source = 'si
       const result = await geocodeAddress(value.address, abort.signal);
       if (id !== requestId.current) return;
       onChange({ address: result.formatted_address, latitude: String(result.latitude), longitude: String(result.longitude), confirmed: false, method: 'google' });
-      setInfo(`Google returned ${result.partial_match ? 'a partial match' : 'an address match'}. Check the pin and explicitly confirm it.`);
+      setInfo(`Google returned ${result.ambiguous ? 'multiple or partial matches (ambiguous)' : result.partial_match ? 'a partial match' : 'an address match'}. Check the pin and explicitly confirm it.`);
     } catch (failure) {
       if (id === requestId.current) setError(failure instanceof Error ? failure.message : 'Geocoding failed. Set the pin manually.');
     } finally { if (id === requestId.current) setLoading(false); }
@@ -63,5 +63,6 @@ export function LocationPicker({ value, onChange, disabled = false, source = 'si
       <span>I confirm this address and pin position are correct.</span>
     </label>
     <p className="text-xs text-slate-400">Changing the address or pin clears confirmation. Manual entry is not automatic geocoding.</p>
+    <p className="text-xs text-amber-800">An address lookup may identify a building or centroid. Review the accessible, permitted vehicle stopping point and correct the pin before confirming; geocoding does not establish roadside access.</p>
   </div>;
 }

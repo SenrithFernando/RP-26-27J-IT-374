@@ -6,7 +6,7 @@ from route_solver import Event,failure
 from travel_time import Coordinate,validate_costs,InvalidTravelCosts
 
 
-def solve_landmark(vehicle,students,schools,settings,provider):
+def solve_landmark(vehicle,students,schools,settings,provider,*,preferred_required=False,feasibility_only=False):
     am=settings.direction=='morning'
     if settings.departure_seconds<(21600 if am else 48600):return failure('invalid_input',['Departure must be at/after 06:00 AM or 13:30 PM respectively.'])
     if not students:return failure('empty',['No confirmed eligible participants for this direction.'])
@@ -33,11 +33,12 @@ def solve_landmark(vehicle,students,schools,settings,provider):
     # AM has a true zero-cost virtual sink, omitted from the returned stops.
     real_count=len(events);end=real_count if am else add(Event('depot:end',vehicle.id+':end','Depot return','end',vehicle.end),[])
     n=real_count+1 if am else len(events)
+    costs=None
     try:
         costs=provider.precompute([Coordinate(e.location.latitude,e.location.longitude,e.location_id) for e in events],settings.direction,settings.departure_seconds)
+        if costs.metadata.get('has_unavailable_pairs'):raise InvalidTravelCosts('Directed travel estimates unavailable; no route generated. See provider failure codes and fallback reasons; missing estimates do not establish road reachability.')
         validate_costs(costs,len(events))
-        if costs.metadata.get('has_unavailable_pairs'):raise InvalidTravelCosts('Some directed pairs unavailable.')
-    except InvalidTravelCosts as error:return failure('unavailable',[str(error)])
+    except InvalidTravelCosts as error:return failure('unavailable',[str(error)],costs.metadata if costs else None)
     def duration(a,b):return 0 if am and b==end else costs.duration_seconds[a][b]
     manager=pywrapcp.RoutingIndexManager(n,1,[0],[end]);routing=pywrapcp.RoutingModel(manager)
     def transit(i,j):
@@ -49,7 +50,7 @@ def solve_landmark(vehicle,students,schools,settings,provider):
     time.CumulVar(routing.Start(0)).SetValue(settings.departure_seconds)
     for node,e in enumerate(events):
         if node in (0,end):continue
-        lo=max(settings.departure_seconds,e.earliest_seconds);hi=min(horizon,e.latest_seconds)
+        lo=max(settings.departure_seconds,e.earliest_seconds);hi=min(horizon,e.latest_seconds,25500 if am and preferred_required and node in school_nodes else 172800)
         if lo>hi:return failure('infeasible',['Hard school arrival/release bounds cannot be met.'])
         time.CumulVar(manager.NodeToIndex(node)).SetRange(lo,hi)
         if am and node in school_nodes:time.SetCumulVarSoftUpperBound(manager.NodeToIndex(node),25500,100)
@@ -65,6 +66,9 @@ def solve_landmark(vehicle,students,schools,settings,provider):
     routing.AddVariableMinimizedByFinalizer(time.CumulVar(routing.End(0)))
     params=pywrapcp.DefaultRoutingSearchParameters();params.first_solution_strategy=routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
     params.local_search_metaheuristic=routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH;params.time_limit.seconds=settings.solver_time_limit_seconds
+    if feasibility_only:
+        params.time_limit.FromMilliseconds(250)
+        params.solution_limit=1
     began=perf_counter();solution=routing.SolveWithParameters(params);runtime=round(perf_counter()-began,6)
     if solution is None:return failure('no_solution_found',['No feasible grouped route within hard bounds and bounded search.'],costs.metadata,runtime)
     stops=[];index=routing.Start(0);load=0;previous=None;leave=settings.departure_seconds

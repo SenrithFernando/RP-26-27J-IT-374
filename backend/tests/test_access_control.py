@@ -128,6 +128,10 @@ class AccessControlTests(unittest.TestCase):
 
     def test_driver_vehicle_trip_and_device_forgery(self):
         driver=self.headers['driverA']
+        advance='/trips/'+self.trips[1]+'/advance-stop?expected_stop_sequence=2'
+        self.assertEqual(self.client.post(advance).status_code,401)
+        self.assertEqual(self.client.post(advance,headers=driver).status_code,403)
+        self.assertEqual(self.client.post(advance,headers=self.headers['parentA']).status_code,403)
         listed=self.client.get('/routing/vehicles',headers=driver).json();self.assertEqual([r['id'] for r in listed],[self.vehicles[0]])
         for path in ['/trips/'+self.trips[1],'/routing/vehicles/'+self.vehicles[1]+'/positions',
             '/routes/latest?vehicle_id='+self.vehicles[1]+'&direction=morning','/routes/'+self.routes[1]+'/map-image']:

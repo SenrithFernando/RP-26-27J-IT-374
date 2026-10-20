@@ -35,6 +35,8 @@ async def lifespan(app):
     try: yield
     finally: stop.set();thread.join(timeout=5)
 app=FastAPI(lifespan=lifespan)
+from domain_http_context import install_domain_context
+install_domain_context(app)  # Never imported by main.app; no authentication claims for this harness.
 for api in (router,positions_router,trips_router,arrivals_router,notification_router): app.include_router(api)
 
 class PickupGroupingTests(TestCase):

@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-20T05:50:48.717180+00:00",
+  "lookup_budget": 1,
+  "attempted": 1,
+  "successful": 1,
+  "ambiguous": 0,
+  "failed": 0,
+  "database_writes": false,
+  "scope": "One public SLIIT Malabe landmark lookup; no adapter event or pin saved.",
+  "provider": "google",
+  "candidate_count": 1,
+  "location_confirmed": false
+}

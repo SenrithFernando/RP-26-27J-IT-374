@@ -19,7 +19,7 @@ export function useVehiclePosition(vehicleId: string, tripId = '') {
       const timeout = setTimeout(() => request.abort(), 8000); deadline = timeout;
       try {
         const [gps, arrival, pickups, operational] = await Promise.allSettled([
-          fetchVehiclePosition(vehicleId, request.signal), tripId ? fetchTripArrival(tripId, request.signal) : Promise.resolve(null),
+          fetchVehiclePosition(vehicleId, request.signal,tripId||undefined), tripId ? fetchTripArrival(tripId, request.signal) : Promise.resolve(null),
           tripId ? fetchPickupWindows(tripId, request.signal) : Promise.resolve(null),
           tripId ? fetchOperationalEvents(tripId, request.signal) : Promise.resolve(null),
         ]);

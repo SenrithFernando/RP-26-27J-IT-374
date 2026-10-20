@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models import School, Student
@@ -7,6 +7,7 @@ from planning_orchestration import columns, mutate_and_plan
 from route_schemas import Direction, GenerateRouteRequest, GeneratedRouteResponse, SchoolSchedule
 from route_service import generate_and_store, latest_route
 from traffic_provider import provider_status
+from datetime import date
 
 router = APIRouter(tags=["Database route optimization"])
 
@@ -24,6 +25,38 @@ def generate(request: GenerateRouteRequest, session: Session = Depends(session_d
 def latest(vehicle_id: str = Query(min_length=1, max_length=64), direction: Direction = Query(),
            session: Session = Depends(session_dependency)):
     return latest_route(session, vehicle_id, direction)
+
+
+@router.get('/routes/published')
+def published(request:Request,vehicle_id:str,direction:Direction,service_date:date,session:Session=Depends(session_dependency)):
+    """Provisional driver contract: read saved publication and pinned trip, never solve."""
+    from landmark import scenario_for_vehicle
+    from models import LandmarkDailyPlan,RouteVersion,Trip
+    from route_service import serialize_version
+    from trips import serialize_trip
+    from sqlalchemy import case,or_
+    scenario=scenario_for_vehicle(session,vehicle_id)
+    state=session.get(LandmarkDailyPlan,(scenario.id,service_date,direction)) if scenario else None
+    row=session.get(RouteVersion,state.route_id) if state and state.route_id else None
+    if row and (row.vehicle_id!=vehicle_id or row.direction!=direction or row.service_date!=service_date):
+        raise HTTPException(409,'Publication snapshot does not match selected vehicle/date/direction.')
+    from auth import scope_route,scope_trip
+    if row:scope_route(session,request.state.principal,row.id)
+    status=state.publication if state else 'not_published'
+    route=serialize_version(session,row) if row and status=='published' else None
+    if route and (route['planning_status']=='stale' or route['feasibility_status']!='feasible'):
+        status='stale';route=None
+    trip=session.scalar(select(Trip).join(RouteVersion,RouteVersion.id==Trip.route_id).where(Trip.vehicle_id==vehicle_id,
+        # An active vehicle trip stays visible, but closed/planned research journeys
+        # belong to the separate research workspace, not school instructions.
+        or_(Trip.state=='ACTIVE',(RouteVersion.service_date==service_date)&(Trip.direction==direction)&
+            RouteVersion.input_snapshot['research_journey'].astext.is_(None)))
+        .order_by(case((Trip.state=='ACTIVE',0),else_=1),Trip.created_at.desc(),Trip.id).limit(1))
+    if trip:scope_trip(session,request.state.principal,trip.id)
+    return {'contract_version':'saferide-driver-plan-provisional/v1','vehicle_id':vehicle_id,'service_date':str(service_date),
+        'direction':direction,'timezone':'Asia/Colombo','publication_status':status,'published_route':route,
+        'trip':serialize_trip(session,trip) if trip else None,'integration_status':'API-ready; Hasara app not connected',
+        'note':'Published planning route and active trip route are separate saved snapshots. GET does not optimize.'}
 
 
 @router.put("/routing/schools/{school_id}/schedule", response_model=SchoolMutationRecord)

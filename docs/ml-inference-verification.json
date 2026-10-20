@@ -1,0 +1,265 @@
+{
+  "verified_at": "2026-10-20T06:49:30.055594+00:00",
+  "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+  "source": "synthetic",
+  "sample_counts": {
+    "all": 2000,
+    "development": 1500,
+    "final_test": 500,
+    "all_trips": 400
+  },
+  "validation_method": "Expanding-window weekly walk-forward, whole trips; latest two weekly blocks held out. Training-only vocabularies and historical averages in each fold.",
+  "folds": [
+    {
+      "fold": 1,
+      "train": {
+        "samples": 500,
+        "trips": 100,
+        "start": "2026-07-06T05:43:42+05:30",
+        "end": "2026-07-17T16:51:12+05:30"
+      },
+      "evaluation": {
+        "samples": 250,
+        "trips": 50,
+        "start": "2026-07-20T05:41:23+05:30",
+        "end": "2026-07-24T16:33:53+05:30"
+      }
+    },
+    {
+      "fold": 2,
+      "train": {
+        "samples": 750,
+        "trips": 150,
+        "start": "2026-07-06T05:43:42+05:30",
+        "end": "2026-07-24T16:33:53+05:30"
+      },
+      "evaluation": {
+        "samples": 250,
+        "trips": 50,
+        "start": "2026-07-27T05:31:50+05:30",
+        "end": "2026-07-31T16:42:16+05:30"
+      }
+    },
+    {
+      "fold": 3,
+      "train": {
+        "samples": 1000,
+        "trips": 200,
+        "start": "2026-07-06T05:43:42+05:30",
+        "end": "2026-07-31T16:42:16+05:30"
+      },
+      "evaluation": {
+        "samples": 250,
+        "trips": 50,
+        "start": "2026-08-03T05:32:01+05:30",
+        "end": "2026-08-07T16:38:22+05:30"
+      }
+    },
+    {
+      "fold": 4,
+      "train": {
+        "samples": 1250,
+        "trips": 250,
+        "start": "2026-07-06T05:43:42+05:30",
+        "end": "2026-08-07T16:38:22+05:30"
+      },
+      "evaluation": {
+        "samples": 250,
+        "trips": 50,
+        "start": "2026-08-10T05:39:10+05:30",
+        "end": "2026-08-14T16:40:39+05:30"
+      }
+    }
+  ],
+  "final_test": {
+    "train": {
+      "samples": 1500,
+      "trips": 300,
+      "start": "2026-07-06T05:43:42+05:30",
+      "end": "2026-08-14T16:40:39+05:30"
+    },
+    "evaluation": {
+      "samples": 500,
+      "trips": 100,
+      "start": "2026-08-17T05:42:52+05:30",
+      "end": "2026-08-28T16:36:09+05:30"
+    },
+    "xgboost": {
+      "mae_seconds": 28.012511859487336,
+      "mae_minutes": 0.4668751976581223,
+      "rmse_seconds": 49.89851705630116,
+      "rmse_minutes": 0.8316419509383527
+    },
+    "baseline": {
+      "mae_seconds": 57.08666959838096,
+      "mae_minutes": 0.9514444933063493,
+      "rmse_seconds": 111.90390381547041,
+      "rmse_minutes": 1.8650650635911736
+    },
+    "unseen_segment_samples": 14,
+    "missing_weather_samples": 57,
+    "unseen_segments": {
+      "samples": 14,
+      "xgboost": {
+        "mae_seconds": 41.06800653035795,
+        "mae_minutes": 0.6844667755059658,
+        "rmse_seconds": 59.311611742450154,
+        "rmse_minutes": 0.9885268623741692
+      },
+      "baseline": {
+        "mae_seconds": 291.2012081904762,
+        "mae_minutes": 4.85335346984127,
+        "rmse_seconds": 346.70007940822353,
+        "rmse_minutes": 5.778334656803725
+      }
+    },
+    "missing_weather": {
+      "samples": 57,
+      "xgboost": {
+        "mae_seconds": 36.64977570845128,
+        "mae_minutes": 0.6108295951408547,
+        "rmse_seconds": 67.1464713599638,
+        "rmse_minutes": 1.1191078559993966
+      },
+      "baseline": {
+        "mae_seconds": 60.70806742021722,
+        "mae_minutes": 1.011801123670287,
+        "rmse_seconds": 106.65457334353601,
+        "rmse_minutes": 1.7775762223922669
+      }
+    }
+  },
+  "recomputed_final_test": {
+    "xgboost": {
+      "mae_seconds": 28.012511859487336,
+      "mae_minutes": 0.4668751976581223,
+      "rmse_seconds": 49.89851705630116,
+      "rmse_minutes": 0.8316419509383527
+    },
+    "baseline": {
+      "mae_seconds": 57.08666959838096,
+      "mae_minutes": 0.9514444933063493,
+      "rmse_seconds": 111.90390381547041,
+      "rmse_minutes": 1.8650650635911736
+    }
+  },
+  "docs_metrics_match": true,
+  "csv_hash_match": true,
+  "training_only_preprocessing_match": true,
+  "full_schema_match": true,
+  "unknown_example": {
+    "duration_s": 294.38736528891116,
+    "baseline_duration_s": 214.20827133333333,
+    "unknown_segment": true,
+    "weather_missing": true,
+    "warnings": [
+      "Unknown segment: model uses available numeric/known ID features; baseline uses training-only global mean.",
+      "Weather input missing: explicit unknown encoding used; no weather forecast was fetched."
+    ]
+  },
+  "routing": [
+    {
+      "case": "selected_ml",
+      "date": "2026-10-21",
+      "participants": 7,
+      "feasibility_status": "feasible",
+      "requested_provider": "ml",
+      "actual_source": "ml_prediction",
+      "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+      "fallback_reasons": [],
+      "prediction_batch_sizes": [
+        90
+      ],
+      "route_legs_matched_to_actual_predictions": 9,
+      "http_requests": 0,
+      "errors": []
+    },
+    {
+      "case": "google_failure_no_fallback",
+      "date": "2026-10-21",
+      "participants": 7,
+      "feasibility_status": "unavailable",
+      "requested_provider": "google",
+      "actual_source": "unavailable",
+      "model_version": null,
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made."
+      ],
+      "prediction_batch_sizes": [],
+      "route_legs_matched_to_actual_predictions": 0,
+      "http_requests": 0,
+      "errors": [
+        "Directed travel estimates unavailable; no route generated. See provider failure codes and fallback reasons; missing estimates do not establish road reachability."
+      ]
+    },
+    {
+      "case": "google_failure_ml",
+      "date": "2026-10-21",
+      "participants": 7,
+      "feasibility_status": "feasible",
+      "requested_provider": "google",
+      "actual_source": "ml_prediction",
+      "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made."
+      ],
+      "prediction_batch_sizes": [
+        90
+      ],
+      "route_legs_matched_to_actual_predictions": 9,
+      "http_requests": 0,
+      "errors": []
+    },
+    {
+      "case": "google_failure_missing_ml",
+      "date": "2026-10-21",
+      "participants": 7,
+      "feasibility_status": "unavailable",
+      "requested_provider": "google",
+      "actual_source": "unavailable",
+      "model_version": null,
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made. Model artifacts missing. Restore the verified model bundle and restart FastAPI."
+      ],
+      "prediction_batch_sizes": [],
+      "route_legs_matched_to_actual_predictions": 0,
+      "http_requests": 0,
+      "errors": [
+        "Directed travel estimates unavailable; no route generated. See provider failure codes and fallback reasons; missing estimates do not establish road reachability."
+      ]
+    },
+    {
+      "case": "google_failure_baseline",
+      "date": "2026-10-21",
+      "participants": 7,
+      "feasibility_status": "feasible",
+      "requested_provider": "google",
+      "actual_source": "historical_baseline",
+      "model_version": "synthetic-xgb-v1-26c03624ed36a729",
+      "fallback_reasons": [
+        "Local demonstration forced the live adapter to fail; no external request was made. Model artifacts missing. Restore the verified model bundle and restart FastAPI. Unseen segment: training-only global historical mean used."
+      ],
+      "prediction_batch_sizes": [],
+      "route_legs_matched_to_actual_predictions": 0,
+      "http_requests": 0,
+      "errors": []
+    }
+  ],
+  "artifacts_unchanged": true,
+  "database_writes": false,
+  "paid_calls": 0,
+  "retrained": false,
+  "pm_inference": {
+    "date": "2026-10-21",
+    "participants": 6,
+    "feasibility_status": "feasible",
+    "actual_source": "ml_prediction",
+    "prediction_batch_sizes": [
+      72
+    ],
+    "route_legs_matched_to_actual_predictions": 8,
+    "ends_at_depot": true,
+    "http_requests": 0,
+    "database_writes": false
+  }
+}

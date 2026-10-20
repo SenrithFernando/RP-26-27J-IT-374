@@ -6,6 +6,8 @@ import argparse,csv,json,math
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from urllib.request import urlopen
+from urllib.request import Request
+import cli_auth
 from operational_geometry import select_geometry,point_polyline_metres
 from arrivals import distance_m
 
@@ -62,9 +64,11 @@ def generate(trip,settings,out_dir):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--vehicle-id',required=True);parser.add_argument('--trip-id',required=True)
     parser.add_argument('--base-url',default='http://127.0.0.1:8000');parser.add_argument('--out-dir',type=Path,default=Path('../data/operational_replays'))
+    parser.add_argument('--username',help='Username only; password entered privately.')
     args=parser.parse_args()
+    cli_auth.configure(args.base_url,args.username)
     def get(path):
-        with urlopen(args.base_url.rstrip('/')+path,timeout=10) as response:return json.load(response)
+        with urlopen(Request(args.base_url.rstrip('/')+path,headers=cli_auth.headers()),timeout=10) as response:return json.load(response)
     trip=get('/trips/'+args.trip_id)
     if trip['vehicle_id']!=args.vehicle_id or trip['state']!='ACTIVE':parser.error('Select the correct ACTIVE trip and vehicle explicitly.')
     view=get('/trips/'+args.trip_id+'/operational-events')

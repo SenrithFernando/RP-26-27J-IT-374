@@ -20,6 +20,7 @@ export function DriverPickupWindows({ data, error, refresh }: { data: PickupWind
   return <section aria-label="Persistent pickup windows" className="rounded-lg border border-slate-200 p-3 space-y-2">
     <h4 className="font-semibold">Pickup exception windows</h4>
     <p>Provisional policy; supervisor confirmation is not recorded. Manual prototype actions are not RFID verification. Student delivery is separate.</p>
+    <p>MISSED means boarding was unconfirmed at the deadline, not a verified no-show. Delayed manual test evidence requires explicit Admin review; original history is retained.</p>
     {error && <p role="alert" className="text-red-700">Pickup windows unavailable: {error}</p>}
     {failure && <p role="alert" className="text-red-700">Pickup action failed: {failure}</p>}
     {!error && !data && <p>Loading server pickup windows...</p>}

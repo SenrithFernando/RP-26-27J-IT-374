@@ -20,6 +20,20 @@ from travel_time import Coordinate, InvalidTravelCosts, validate_costs
 
 
 class FeatureTests(unittest.TestCase):
+    def test_startup_loads_once_and_status_predict_do_not_reload(self):
+        import asyncio,xgboost
+        from main import lifespan,app
+        from ml.api import status
+        model=TravelTimePredictor()
+        original=xgboost.XGBRegressor.load_model
+        async def check():
+            async with lifespan(app):
+                for _ in range(3):self.assertTrue(status()['available'])
+                predict(PredictionRequest(origin_id='A',destination_id='B',distance_m=100,departure_timestamp='2026-10-21T06:00:00+05:30'))
+        # No real recovery/expiry worker runs and no records are touched.
+        with patch('main.Thread'),patch('main.predictor',model),patch('ml.api.predictor',model),patch.object(xgboost.XGBRegressor,'load_model',autospec=True,side_effect=original) as load:
+            asyncio.run(check());self.assertEqual(load.call_count,1)
+
     def test_unknown_segment_missing_weather_and_training_only_averages(self):
         known = feature_record('A', 'B', '2026-07-06T06:30:00+05:30', 100, 0)
         unknown = feature_record('NEW', 'B', '2026-07-07T13:00:00+05:30', 200, None)
@@ -100,6 +114,67 @@ class GeneratedArtifactTests(unittest.TestCase):
         self.assertEqual(costs.metadata['duration_source'], 'ml_prediction')
         with self.assertRaises(InvalidTravelCosts):
             MLTravelTimeProvider(date(2026, 10, 15), None, self.model).precompute([Coordinate(6.93, 79.86)], 'morning', 21600)
+
+    def test_corrupt_or_mismatched_copies_fail_closed_and_load_once(self):
+        import shutil
+        from hashlib import sha256
+        version=self.model.metadata['model_version']
+        for kind in ('checksum','schema','width'):
+            with self.subTest(kind=kind),TemporaryDirectory() as root:
+                target=Path(root);shutil.copytree(ARTIFACTS/version,target/version);shutil.copy2(ARTIFACTS/'current.json',target/'current.json')
+                directory=target/version;meta=json.loads((directory/'metadata.json').read_text())
+                if kind=='checksum':(directory/'model.json').write_text('{}')
+                elif kind=='schema':
+                    meta['feature_schema']['numeric']=list(reversed(meta['feature_schema']['numeric']))
+                    (directory/'metadata.json').write_text(json.dumps(meta))
+                else:
+                    prep=json.loads((directory/'preprocessing.json').read_text());prep['categories']['origin_id'].append('ZZZZ_UNEXPECTED_FEATURE')
+                    prep['categories']['origin_id'].sort()  # Valid ordering; rejection must be the model-width mismatch.
+                    (directory/'preprocessing.json').write_text(json.dumps(prep))
+                    meta['files_sha256']['preprocessing.json']=sha256((directory/'preprocessing.json').read_bytes()).hexdigest()
+                    (directory/'metadata.json').write_text(json.dumps(meta))
+                broken=TravelTimePredictor(target);self.assertFalse(broken.load()['available'])
+                with self.assertRaises(ModelUnavailable):broken.predict_many([{}])
+        import xgboost
+        original=xgboost.XGBRegressor.load_model
+        with patch.object(xgboost.XGBRegressor,'load_model',autospec=True,side_effect=original) as read:
+            model=TravelTimePredictor();model.load();model.load();model.status()
+            self.assertTrue(model.status()['available']);self.assertEqual(read.call_count,1)
+
+    def test_saved_final_metrics_reproduce_without_training(self):
+        from hashlib import sha256
+        from ml.train_model import metrics
+        report=self.model.metrics
+        self.assertEqual(json.loads((ARTIFACTS.parent.parent.parent/'docs/ml_metrics.json').read_text()),report)
+        self.assertEqual(sha256(DEFAULT_OUTPUT.read_bytes()).hexdigest(),report['csv_sha256'])
+        blocks=chronological_blocks(load_data(DEFAULT_OUTPUT));development=sum(blocks[:-2],[]);test=sum(blocks[-2:],[])
+        expected_baseline=fit_baseline([r['_record'] for r in development],[r['_target'] for r in development])
+        self.assertEqual(expected_baseline,self.model.baseline)
+        predicted=self.model.predict_many([dict(origin_id=r['origin_id'],destination_id=r['destination_id'],departure_timestamp=r['_timestamp'],distance_m=float(r['distance_m']),weather_flag=None if r['weather_flag']=='' else int(r['weather_flag'])) for r in test])
+        actual=np.array([r['_target'] for r in test])
+        for key,values in [('xgboost',[p['duration_s'] for p in predicted]),('baseline',[p['baseline_duration_s'] for p in predicted])]:
+            computed=metrics(actual,np.array(values))
+            for field,value in computed.items():self.assertAlmostEqual(value,report['final_test'][key][field],places=9)
+        folds=report['walk_forward'];total=sum(f['evaluation']['samples'] for f in folds)
+        for key in ('xgboost','baseline'):
+            mae=sum(f[key]['mae_seconds']*f['evaluation']['samples'] for f in folds)/total
+            rmse=(sum(f[key]['rmse_seconds']**2*f['evaluation']['samples'] for f in folds)/total)**.5
+            self.assertAlmostEqual(mae,report['walk_forward_aggregate'][key]['mae_seconds'],places=9)
+            self.assertAlmostEqual(rmse,report['walk_forward_aggregate'][key]['rmse_seconds'],places=9)
+
+    def test_incomplete_and_nonpositive_prediction_batches_are_not_zero_matrix_arcs(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        points=[Coordinate(6.9,79.9,'A'),Coordinate(6.91,79.91,'B')]
+        for values in ([],[{'duration_s':1}],[{'duration_s':0}]*2,[{'duration_s':float('nan')}]*2):
+            broken=SimpleNamespace(status=lambda:{'available':True},predict_many=Mock(return_value=values))
+            with self.assertRaises(InvalidTravelCosts):MLTravelTimeProvider(date(2026,10,15),None,broken).precompute(points,'morning',21600)
+
+    def test_nonfinite_or_underflow_model_output_is_unavailable(self):
+        request=dict(origin_id='UNKNOWN',destination_id='ALSO_UNKNOWN',departure_timestamp='2026-10-21T06:00:00+05:30',distance_m=100)
+        for value in (float('nan'),float('inf'),-1000.):
+            with patch.object(self.model.model,'predict',return_value=np.array([value])):
+                with self.assertRaises(ModelUnavailable):self.model.predict_many([request])
 
 
 if __name__ == '__main__': unittest.main()

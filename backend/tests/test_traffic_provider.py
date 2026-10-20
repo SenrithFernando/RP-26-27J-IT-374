@@ -24,6 +24,13 @@ def response(method, body, fields, key, timeout):
 
 
 class GoogleAdapterTests(unittest.TestCase):
+    def test_unsupported_departure_error_is_sanitized(self):
+        from io import BytesIO
+        error=HTTPError('https://redacted.invalid',400,'Bad Request',{},BytesIO(b'{"error":{"message":"departure time unsupported for this date; PRIVATE_SENTINEL"}}'))
+        with patch('traffic_google.urlopen',side_effect=error):
+            with self.assertRaises(ProviderFailure) as raised:post_google('computeRouteMatrix',{},'duration','synthetic-test-key',1)
+        self.assertEqual(raised.exception.code,'unsupported_departure')
+        self.assertNotIn('PRIVATE_SENTINEL',str(raised.exception))
     def test_missing_credentials_forced_failure_and_past_departure_do_not_call_network(self):
         transport = Mock(side_effect=AssertionError('No network permitted'))
         for settings, force, stamp, expected in [({**CONFIG,'key':''},False,FUTURE,'missing_credentials'),
@@ -94,8 +101,31 @@ class GoogleAdapterTests(unittest.TestCase):
         self.assertEqual(adapter.geometry(stops,FUTURE,True)['status'],'unavailable')
         self.assertEqual(transport.call_count,1)
 
+    def test_geometry_shares_explicit_matrix_budget(self):
+        transport=Mock(side_effect=response)
+        request=GenerateRouteRequest(vehicle_id='FIXED',direction='morning',service_date=FUTURE.date(),departure_seconds=21600,provider='google',live_http_budget=1)
+        provider=TrafficSnapshotProvider(request,live=GoogleRoutesAdapter(CONFIG,transport,BoundedCache(ttl=0)))
+        provider.precompute(POINTS,'morning',21600)
+        geometry=provider.live.geometry([{'latitude':p.latitude,'longitude':p.longitude} for p in POINTS],FUTURE)
+        self.assertEqual(geometry['status'],'unavailable')
+        self.assertEqual(geometry['failure_code'],'explicit_request_budget')
+        self.assertEqual(provider.live_http_requests,1)
+        self.assertEqual(transport.call_count,1)
+
 
 class SnapshotTests(unittest.TestCase):
+    def test_explicit_zero_budget_never_calls_google_and_preserves_failure_metadata(self):
+        from landmark_solver import solve_landmark
+        transport=Mock(side_effect=AssertionError('Zero HTTP budget'))
+        live=GoogleRoutesAdapter(CONFIG,transport,BoundedCache(ttl=0))
+        request=self.request(provider='google',live_http_budget=0,fallback_policy='none')
+        vehicle,students,schools=fixture();vehicle=replace(vehicle,capacity=20)
+        result=solve_landmark(vehicle,students,schools,GenerationSettings('morning',21600),TrafficSnapshotProvider(request,live))
+        self.assertEqual(result['feasibility_status'],'unavailable')
+        self.assertEqual(result['provider_source']['requested_provider'],'google')
+        self.assertEqual(result['provider_source']['live_http_requests'],0)
+        self.assertIn('explicit_request_budget',result['provider_source']['matrix_failure_counts'])
+        transport.assert_not_called()
     @classmethod
     def setUpClass(cls): predictor.load(); baseline_repository.load()
 
@@ -158,6 +188,7 @@ class SnapshotTests(unittest.TestCase):
             result = solve_registered_route(vehicle,students,schools,GenerationSettings('morning',21600,30,30,21600,1),provider)
         self.assertEqual(result['feasibility_status'],'feasible',result['errors'])
         self.assertEqual(result['provider_source']['duration_source'],'mixed')
+        self.assertTrue(result['provider_source']['matrix_contains_mixed_sources'])
         self.assertEqual(set(result['provider_source']['route_source_counts']),{'google_live','ml_prediction'})
         self.assertTrue(any(s['travel_source'].get('fallback_reason') for s in result['stops']))
 

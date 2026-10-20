@@ -9,6 +9,7 @@ import { AccountAccess } from '../components/AccountAccess';
 import { RouteOptimization } from './RouteOptimization';
 import { StudentsPage } from './StudentsPage';
 import { DailyPlan } from './DailyPlan';
+import { AdultResearch } from './AdultResearch';
 import { apiFetch,RouteDirection } from '../services/api';
 
 function Login(){
@@ -44,13 +45,13 @@ export function AuthenticatedApp({demo}:{demo:React.ReactNode}){
   if(auth.loading)return <p className="p-8">Checking authenticated session…</p>;
   if(!auth.user)return <Login/>;
   const user=auth.user;
-  return <div className="min-h-screen bg-slate-50"><header className="bg-[#176B87] text-white px-5 py-3 flex gap-3 items-center relative z-[100]">
+  return <div className={user.mode==='real'&&user.role==='driver'?'h-dvh min-h-0 flex flex-col overflow-hidden bg-slate-50':'min-h-screen bg-slate-50'}><header className="shrink-0 bg-[#176B87] text-white px-5 py-3 flex flex-wrap gap-3 items-center relative z-[100]">
     <span className="flex-1">{user.username} · {user.role} · {user.mode==='demo'?'SYNTHETIC DEMO':'Authenticated operations'}</span>
     <button className="border rounded px-3 py-1" onClick={()=>{setError('');void auth.logout().catch(e=>setError(e.message));}}>Log out</button>
-  </header>{user.mode==='real'&&<p className="px-5 py-2 text-xs text-slate-500 border-b bg-white">Cabin safety, camera, RFID and emergency teammate features: Not connected. Synthetic component demonstrations are available only in the separate authenticated simulation workspace.</p>}{error&&<p role="alert" className="p-3 text-red-700">Logout failed: {error}. Server authorization has not been confirmed revoked; retry.</p>}
+  </header>{user.mode==='real'&&<p className="shrink-0 px-5 py-2 text-xs text-slate-500 border-b bg-white">Cabin safety, camera, RFID and emergency teammate features: Not connected. Synthetic component demonstrations are available only in the separate authenticated simulation workspace.</p>}{error&&<p role="alert" className="p-3 text-red-700">Logout failed: {error}. Server authorization has not been confirmed revoked; retry.</p>}
     {user.mode==='demo'?demo:user.role==='administrator'?<>
-      <nav className="p-4 flex flex-wrap gap-3">{['Daily Plan','Dashboard','Routes','Live Fleet','Students','Notifications','Access'].map(t=><button key={t} onClick={()=>setTab(t)} className={`rounded px-4 py-2 ${tab===t?'bg-[#176B87] text-white':'bg-white border'}`}>{t}</button>)}</nav>
-      <main className="p-6">{tab==='Daily Plan'?<DailyPlan/>:tab==='Dashboard'||tab==='Live Fleet'?<OperationsFleet/>:tab==='Routes'?<RouteOptimization/>:tab==='Students'?<StudentsPage/>:tab==='Access'?<AccountAccess/>:<PersistentNotifications recipient="admin"/>}</main>
-    </>:user.role==='driver'?<div className="relative h-[calc(100vh-4rem)]"><DriverStoredRoute vehicleId={vehicle} direction={direction} onVehicleChange={setVehicle} onDirectionChange={setDirection} onBack={()=>{void auth.logout().catch(e=>setError(e.message));}}/></div>:<ParentView/>}
+      <nav className="p-4 flex flex-wrap gap-3">{['Daily Plan','Adult research','Dashboard','Routes','Live Fleet','Students','Notifications','Access'].map(t=><button key={t} onClick={()=>setTab(t)} className={`rounded px-4 py-2 ${tab===t?'bg-[#176B87] text-white':'bg-white border'}`}>{t}</button>)}</nav>
+      <main className="p-6">{tab==='Daily Plan'?<DailyPlan/>:tab==='Adult research'?<AdultResearch/>:tab==='Dashboard'||tab==='Live Fleet'?<OperationsFleet/>:tab==='Routes'?<RouteOptimization/>:tab==='Students'?<StudentsPage/>:tab==='Access'?<AccountAccess/>:<PersistentNotifications recipient="admin"/>}</main>
+    </>:user.role==='driver'?<div className="relative flex-1 min-h-0"><DriverStoredRoute vehicleId={vehicle} direction={direction} onVehicleChange={setVehicle} onDirectionChange={setDirection} onBack={()=>{void auth.logout().catch(e=>setError(e.message));}}/></div>:<ParentView/>}
   </div>;
 }

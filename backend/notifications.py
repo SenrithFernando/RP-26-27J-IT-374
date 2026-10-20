@@ -32,7 +32,7 @@ def create_missed_event(session,window,outcome,now,source):
         window_id=window.id,student_id=outcome.student_id,student_name=outcome.student_name,vehicle_id=trip.vehicle_id,
         route_id=window.route_id,stop_sequence=outcome.stop_sequence,occurred_at=window.deadline_at,created_at=now,
         action_source=source,position_source=position_source,mode=window.mode,delivery_status='in_app_event_created',
-        message=f"Pickup window expired without recorded confirmation for {outcome.student_name}.")
+        message=f"Boarding unconfirmed at pickup-window deadline for {outcome.student_name}; no delivery or actual no-show is established.")
     session.execute(statement.on_conflict_do_nothing(constraint='one_missed_notification_per_pickup'))
 
 
@@ -47,9 +47,20 @@ def scoped_query(recipient,student_id):
 def serialize(row,recipient,session=None):
     read_at=row.admin_read_at if recipient=='admin' else row.parent_read_at
     route=session.get(RouteVersion,row.route_id) if session is not None else None
+    resolution=None
+    if session is not None:
+        from models import PickupTransition
+        resolution=session.scalar(select(PickupTransition).where(PickupTransition.window_id==row.window_id,
+            PickupTransition.student_id==row.student_id,PickupTransition.from_state=='MISSED',
+            PickupTransition.to_state=='PICKED_UP',PickupTransition.action_source=='manual_test_delayed_review')
+            .order_by(PickupTransition.order_id.desc()).limit(1))
     return {**{key:getattr(row,key) for key in ('id','order_id','kind','trip_id','window_id','student_id','student_name','vehicle_id',
         'route_id','stop_sequence','occurred_at','created_at','action_source','position_source','mode','delivery_status','message')},
-        'read':read_at is not None,'read_at':read_at,'route_version':route.version if route else None}
+        'read':read_at is not None,'read_at':read_at,'route_version':route.version if route else None,
+        'alert_type':'boarding_unconfirmed','generation_status':'in_app_event_created',
+        'parent_channel_status':'unavailable_hasara_not_connected',
+        'resolution_status':'resolved_delayed_manual_test_evidence' if resolution else 'unresolved',
+        'resolved_at':resolution.recorded_at if resolution else None}
 
 
 @router.get('')

@@ -46,7 +46,11 @@ def distance_m(lat1,lon1,lat2,lon2):
 
 
 def initialize_stop(session,trip,now):
-    stop=session.scalar(select(RouteStop).where(RouteStop.route_id==trip.route_id,RouteStop.action!='start').order_by(RouteStop.sequence).limit(1))
+    from research_routes import is_research
+    from models import RouteVersion
+    query=select(RouteStop).where(RouteStop.route_id==trip.route_id)
+    if not is_research(session.get(RouteVersion,trip.route_id)):query=query.where(RouteStop.action!='start')
+    stop=session.scalar(query.order_by(RouteStop.sequence).limit(1))
     trip.current_stop_sequence=stop.sequence if stop else None
     trip.current_stop_selected_at=now
     trip.arrival_settings=configured_settings()
@@ -114,8 +118,10 @@ def arrival_view(session,trip,now=None):
     event={"event_id":row.event_id,"arrived_at":row.arrived_at,"candidate_started_at":row.candidate_started_at,
         "confirming_position_id":row.confirming_position_id,"source":row.source,"route_id":row.route_id,"stop_sequence":row.stop_sequence} if row and row.arrived_at else None
     next_stop=session.scalar(select(RouteStop.sequence).where(RouteStop.route_id==trip.route_id,RouteStop.sequence>trip.current_stop_sequence).order_by(RouteStop.sequence).limit(1)) if stop else None
+    from route_service import saved_stop_location_confirmed
+    from models import RouteVersion
     return {"trip_id":trip.id,"route_id":trip.route_id,"state":status,"reason":reason,"settings":cfg.model_dump(),
-        "current_stop":{**stop.details,"sequence":stop.sequence} if stop else None,
+        "current_stop":{**stop.details,"sequence":stop.sequence,"location_confirmed":saved_stop_location_confirmed(session.get(RouteVersion,trip.route_id),stop)} if stop else None,
         "position_age_seconds":max(0,age) if age is not None else None,"gps_status":"fresh" if usable else "unknown" if position is None else "stale_or_ineligible",
         "distance_metres":distance_m(position.latitude,position.longitude,stop.latitude,stop.longitude) if usable else None,"observation_count":row.observation_count if row else 0,
         "candidate_started_at":row.candidate_started_at if row else None,"arrival_event":event,

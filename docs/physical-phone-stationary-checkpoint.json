@@ -1,0 +1,60 @@
+{
+  "checkpoint": "Physical Android stationary adult landmark GPS ingestion",
+  "inspected_at": "2026-10-19T01:23:16.783845+05:30",
+  "timezone": "Asia/Colombo",
+  "operator_confirmation": {
+    "source": "user statement in this conversation",
+    "physical_android_operated": true,
+    "test_type": "stationary",
+    "observation_context": "adult_landmark_field_test"
+  },
+  "tracking_session_id": "DEVICE_acd0873144ca4681ace2d3a09fd82d33",
+  "session_kind": "phone",
+  "vehicle_id": "MALABE_PP1_VAN_01",
+  "trip_id": "TRIP_f682a6851f3d41ca94dd4cf6e182fafc",
+  "saved_route_id": "ROUTE_14dd3b2c6fbc4ec5a2136f94115a0209",
+  "saved_route_version": 39,
+  "planning_vehicle_source": "simulated",
+  "session_created_at": "2026-10-19T00:53:36.931949+05:30",
+  "session_expires_at": "2026-10-19T02:46:45.081312+05:30",
+  "session_revoked_at": "2026-10-19T01:19:35.722291+05:30",
+  "session_revoked": true,
+  "trip_state": "COMPLETED",
+  "trip_started_at": "2026-10-19T00:34:28.205789+05:30",
+  "trip_completed_at": "2026-10-19T01:20:07.293656+05:30",
+  "persisted_sample_count": 225,
+  "unique_sample_ids": 225,
+  "duplicate_persisted_sample_ids": 0,
+  "source_counts": {
+    "actual_device": 225
+  },
+  "all_vehicle_trip_bindings_consistent": true,
+  "accuracy_quality_counts": {
+    "poor": 3,
+    "acceptable": 222
+  },
+  "nullable_speed_count": 3,
+  "first_recorded_at": "2026-10-19T00:53:45.424000+05:30",
+  "latest_recorded_at": "2026-10-19T01:13:41.749000+05:30",
+  "latest_received_at": "2026-10-19T01:13:41.911421+05:30",
+  "latest_age_seconds_at_inspection": 575.0,
+  "stale_after_seconds": 60,
+  "latest_stale": true,
+  "latest_accuracy_quality": "acceptable",
+  "all_samples_recorded_after_enrollment": true,
+  "all_samples_received_before_revocation": true,
+  "measured_student_export_exclusion_counts": {
+    "poor_position_accuracy": 3,
+    "adult_landmark_field_test_not_measured_student_trip": 222
+  },
+  "all_excluded_from_measured_student_exports": true,
+  "evidence_metadata_sha256": "3462e2655fa490a2a013b3a326fd692c0abdd4723f8d19e742060d83b7a2ceda",
+  "digest_scope": "Ordered sample IDs, source/binding, recorded/received timestamps, accuracy quality and speed-null flags. Coordinates and raw accuracy/speed values are not included.",
+  "verification_limits": [
+    "Physical stationary Android operation is operator-confirmed; server evidence independently verifies persisted scoped uploads.",
+    "Zero duplicate persisted IDs does not prove the physical run exercised duplicate HTTP delivery or offline retry.",
+    "Revocation and completion are verified stored states; no post-revocation upload was attempted in this inspection.",
+    "No moving-vehicle tracking, route-deviation accuracy, background reliability, measured travel-time accuracy or student delivery claim."
+  ],
+  "inspection_changes": "Documentation only; no database records or sample provenance modified."
+}

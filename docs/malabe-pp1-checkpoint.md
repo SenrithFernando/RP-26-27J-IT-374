@@ -148,7 +148,7 @@ overwrite newer ones. Imported coordinates remain unconfirmed until pin review.
 | school | school_external_id, correct name; optional address/paired coordinates; fixed start/hard/preferred/release/service/window times |
 | assignment | student_external_id, school_external_id, vehicle_external_id=VAN_01, active; optional participant address/paired coordinates |
 | attendance | student_external_id, service_date, am and pm: yes/no/unknown |
-| boarding | student_external_id, service_date, direction=morning, outcome: boarded/no_show/unknown |
+| boarding | AM: student_external_id, service_date, direction=morning, outcome: boarded/no_show/unknown. PM manual-test extension: trip_id, direction=afternoon, outcome=boarded, optional resolves_event_id; see boarding-window-verification.md. |
 | policy | afternoon_only: unresolved/allow/deny, explicitly test-scoped |
 
 Boarding v1 imports morning test evidence only. Afternoon manual confirmations

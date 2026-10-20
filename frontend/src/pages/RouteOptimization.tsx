@@ -13,7 +13,7 @@ import {
 
 const control = 'w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white';
 const errorText = (failure: unknown) => failure instanceof Error ? failure.message : 'Unable to complete the request.';
-const clock = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(iso));
+const clock = (iso: string | null) => iso ? new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(iso)) : 'Unknown';
 const timeInput = (seconds: number | null) => seconds === null ? '' : `${String(Math.floor(seconds / 3600)).padStart(2, '0')}:${String(Math.floor(seconds % 3600 / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 const secondsInput = (value: string) => { const [hours, minutes, seconds = 0] = value.split(':').map(Number); return hours * 3600 + minutes * 60 + seconds; };
 const duration = (seconds: number | null | undefined) => seconds == null ? 'Unavailable' : `${seconds} s`;
@@ -243,7 +243,7 @@ function StopRow({ stop }: { stop: StoredRouteStop }) {
     <div className="min-w-0 text-xs text-slate-500 space-y-1"><p className="font-semibold text-sm text-slate-800">{stop.name}</p>
       <p className="uppercase font-medium text-[#176B87]">{stop.action}</p><p className="break-all">Student: {stop.student_id ?? '—'} · School: {stop.school_id ?? '—'}</p>
       <p className="break-all">Location: {stop.location_id}</p><p>{stop.latitude}, {stop.longitude}</p>
-      <p>{new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Colombo' }).format(new Date(stop.eta))} | Arrival {clock(stop.arrival)} · ETA {clock(stop.eta)} · Leave {clock(stop.departure)}</p>
+      <p>{stop.eta ? new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Colombo' }).format(new Date(stop.eta)) : 'Unknown'} | Arrival {clock(stop.arrival)} · ETA {clock(stop.eta)} · Leave {clock(stop.departure)}</p>
       <p>Driving {stop.driving_seconds_from_previous} s · Service {stop.service_seconds} s · Waiting {stop.waiting_seconds} s</p>
       <SourceBadge source={stop.travel_source?.source} />
       {stop.travel_source?.fallback_reason && <p className="text-amber-800">Fallback: {stop.travel_source.fallback_reason}</p>}

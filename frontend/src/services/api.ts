@@ -147,7 +147,7 @@ export const removeStudent = (id: string, requestKey?: string) => writeStudent(`
 
 export interface MapPoint {
   id: string; location_id: string; name: string;
-  kind: 'home' | 'school' | 'vehicle_start' | 'vehicle_end';
+  kind: 'home' | 'school' | 'landmark' | 'vehicle_start' | 'vehicle_end';
   latitude: number; longitude: number; address: string;
   input_source: InputSource; location_method: LocationMethod; location_input_source?: InputSource;
   action?: string; student_id?: string | null; eta?: string; load_after?: number;
@@ -157,7 +157,7 @@ export interface MapLocations {
 }
 export interface GeocodeResult {
   latitude: number; longitude: number; formatted_address: string;
-  provider: 'google'; partial_match: boolean; location_confirmed: false;
+  provider: 'google'; partial_match: boolean; ambiguous?: boolean; candidate_count?: number; location_confirmed: false;
 }
 export const fetchMapLocations = (vehicleId: string, direction: RouteDirection, signal?: AbortSignal) =>
   apiFetch<MapLocations>(`/routing/map-locations/${encodeURIComponent(vehicleId)}?direction=${direction}`, signal);
@@ -185,17 +185,24 @@ export interface GenerateRouteRequest {
   weather_flag?: 0 | 1 | null;
 }
 export interface StoredRouteStop {
+  occurrence?:number; research_visit?:boolean;
+  location_confirmed?: boolean;
+  grouped?: boolean; student_ids?: string[]; student_names?: Record<string,string>;
   student_name?: string | null; school_name?: string | null;
   travel_source?: { source: string; fallback_reason?: string | null; unavailable_reason?: string | null; distance_source?: string; scenario_modified?: boolean };
   sequence: number; event_id: string; location_id: string; name: string;
   action: 'start' | 'pickup' | 'delivery' | 'end'; student_id: string | null; school_id: string | null;
   latitude: number; longitude: number; address: string; input_source: InputSource; location_method: LocationMethod;
   arrival_seconds: number; eta_seconds: number; departure_seconds: number;
-  arrival: string; eta: string; departure: string;
-  driving_seconds_from_previous: number; distance_metres_from_previous: number;
+  arrival: string | null; eta: string | null; departure: string | null;
+  driving_seconds_from_previous: number | null; distance_metres_from_previous: number | null;
   service_seconds: number; waiting_seconds: number; load_before: number; load_after: number;
 }
 export interface StoredRoute {
+  route_kind?: string;
+  research_journey?: {schema:string;travel_mode:'driving'|'walking'|'bicycling';operator_id:string;driver_id:string;ordered_keys:string[]};
+  end_policy?: string;
+  departure_recommendation?: {status:string;recommended_departure_seconds:number|null;override_departure_seconds?:number;mode:string};
   daily?: {scenario_id:string;provenance:string;attendance:Record<string,unknown>} | null;
   route_id: string; version: number; vehicle_id: string; direction: RouteDirection; service_date: string;
   departure: string; departure_seconds: number; timezone: string; generated_at: string;
@@ -205,6 +212,8 @@ export interface StoredRoute {
   solver_runtime_seconds: number | null; solver_status: string; optimality: string; assignment_policy: string;
   provider_source: { provider: string; duration_source: string; distance_source: string; distance_is_approximate: boolean; speed_metres_per_second?: number; costs_computed?: boolean; model_version?: string; training_data_source?: string; warnings?: string[]; time_assumption?: string;
     requested_provider?: string; route_is_mixed?: boolean; route_source_counts?: Record<string, number>; route_fallback_reasons?: string[];
+    snapshot_generated_at?: string; departure_timestamp?: string; matrix_contains_mixed_sources?: boolean;
+    live_http_requests?: number; live_http_budget?: number | null; force_live_failure?: boolean;
     fallback_reasons?: string[]; live_configured?: boolean; matrix_snapshot_id?: string; traffic_scenario?: string; scenario_modified_directed_arcs?: number } | null;
   alternative_comparison?: { matrix_snapshot_id: string; same_matrix: boolean; reference_label: string; reference_feasibility_status: string;
     reference_errors: string[]; reference: Record<string, number> | null; selected: Record<string, number>; reference_minus_selected: Record<string, number | null>; sequence_changed: boolean; note: string } | null;
@@ -235,7 +244,10 @@ export const fetchPlanStatus = (vehicleId: string, direction: RouteDirection, si
   apiFetch<PlanStatus>(`/routing/plans/${encodeURIComponent(vehicleId)}/${direction}`, signal);
 export const retryRoutingEvent = (eventId: string) => apiFetch<RoutingOutcome>(`/routing/events/${encodeURIComponent(eventId)}/retry`, undefined, { method: 'POST' }).then((outcome) => { window.dispatchEvent(new CustomEvent('routing-input-saved', { detail: outcome })); return outcome; });
 
-export interface MLStatus { available: boolean; status: string; reason: string | null; model_version: string | null; disclaimer: string }
+export interface MLMetrics {mae_seconds:number;mae_minutes:number;rmse_seconds:number;rmse_minutes:number}
+export interface MLRange {samples:number;trips:number;start:string;end:string}
+export interface MLEvaluation {sample_counts:{all:number;development:number;final_test:number;all_trips:number};validation_method:string;parameter_selection:string;walk_forward:{fold:number;train:MLRange;evaluation:MLRange;xgboost:MLMetrics;baseline:MLMetrics}[];final_test:{train:MLRange;evaluation:MLRange;xgboost:MLMetrics;baseline:MLMetrics;unseen_segment_samples:number;missing_weather_samples:number}}
+export interface MLStatus { available: boolean; status: string; reason: string | null; model_version: string | null; disclaimer: string;training_data_source?:string|null;feature_schema?:Record<string,unknown>|null;evaluation?:MLEvaluation|null }
 export const fetchMLStatus = (signal?: AbortSignal) => apiFetch<MLStatus>('/ml/status', signal);
 export interface TrafficStatus {
   google: { configured: boolean; status: string; reason: string | null; timeout_seconds: number; cache_ttl_seconds: number; road_geometry_supported: boolean; google_map_display_configured: boolean };
@@ -245,6 +257,7 @@ export const fetchTrafficStatus = (signal?: AbortSignal) => apiFetch<TrafficStat
 
 
 export interface TripRecord {
+  adult_phone_field_test_authorized?:boolean; gps_observation_context?:string|null;
   trip_id: string; route_id: string; route_version: number; vehicle_id: string; direction: RouteDirection;
   state: 'PLANNED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
   created_at: string; started_at: string | null; completed_at: string | null; cancelled_at: string | null;
@@ -274,8 +287,8 @@ export interface LatestPosition {
   position: VehiclePosition | null; age_seconds: number | null; status: 'fresh' | 'stale' | 'unknown';
   stale_after_seconds: number; movement_state: 'unknown'; note: string;
 }
-export const fetchVehiclePosition = (vehicleId: string, signal?: AbortSignal) =>
-  apiFetch<LatestPosition>(`/routing/vehicles/${encodeURIComponent(vehicleId)}/positions/latest`, signal);
+export const fetchVehiclePosition = (vehicleId: string, signal?: AbortSignal, tripId?:string) =>
+  apiFetch<LatestPosition>(`/routing/vehicles/${encodeURIComponent(vehicleId)}/positions/latest${tripId?`?trip_id=${encodeURIComponent(tripId)}`:''}`, signal);
 
 
 export interface TripArrival {
@@ -308,6 +321,7 @@ export const cancelPickup = (tripId: string, studentId: string, reason: string) 
 
 export type NotificationRecipient = 'admin' | 'parent';
 export interface MissedPickupNotice {
+  generation_status?:string; parent_channel_status?:string; resolution_status?:string; resolved_at?:string|null;
   id: string; order_id: number; kind: 'missed_pickup'; trip_id: string; window_id: string;
   student_id: string; student_name: string; vehicle_id: string; route_id: string; route_version?: number | null; stop_sequence: number;
   occurred_at: string; created_at: string; action_source: string; position_source: string | null;

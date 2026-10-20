@@ -13,12 +13,13 @@ def planning_lock(session):
 
 def newest(session, vehicle_id, direction):
     return session.scalar(select(RouteVersion).where(RouteVersion.vehicle_id == vehicle_id, RouteVersion.direction == direction)
+                          .where(RouteVersion.input_snapshot['research_journey'].is_(None))
                           .order_by(RouteVersion.version.desc()).limit(1))
 
 
 def execution_guard(session, vehicle_id, direction, service_date):
     return session.scalar(select(RouteVersion).where(RouteVersion.vehicle_id == vehicle_id, RouteVersion.direction == direction,
-        or_(RouteVersion.execution_status == "active", and_(RouteVersion.execution_status == "completed", RouteVersion.service_date >= service_date)))
+        or_(RouteVersion.execution_status == "active", and_(RouteVersion.execution_status == "completed", RouteVersion.service_date >= service_date,RouteVersion.input_snapshot['research_journey'].is_(None))))
         .order_by(RouteVersion.version.desc()).limit(1))
 
 
@@ -42,6 +43,13 @@ def comparison(before, after):
 
 
 def freshness(session, route):
+    from research_routes import is_research,latest,participants_valid
+    if is_research(route):
+        newest_research=latest(session,route.vehicle_id,route.service_date)
+        current=bool(newest_research and newest_research.id==route.id and route.execution_status=='pre_trip' and route.service_date>=datetime.now(ZoneInfo('Asia/Colombo')).date() and participants_valid(session,route.input_snapshot['research_journey']))
+        return {'roster_version':route.roster_version,'current_roster_version':route.roster_version,'is_current':current,
+            'planning_status':'reviewed_research' if current else 'historical_research','planning_errors':[],
+            'trigger_event_id':None,'trigger_event':'adult_research_review','execution_status':route.execution_status,'comparison':{}}
     from landmark import route_freshness
     specific=route_freshness(session,route)
     if specific is not None:return specific
@@ -82,6 +90,8 @@ def set_generated_state(session, route, previous):
 def set_execution_status(session, route, status):
     """Shared execution protection, inside the caller's planning transaction."""
     route.execution_status = status
+    from research_routes import is_research
+    if is_research(route):return
     state = session.get(RoutePlanState, (route.vehicle_id, route.direction))
     if state is None: state = set_generated_state(session, route, None)
     state.generation_status = "locked_" + status

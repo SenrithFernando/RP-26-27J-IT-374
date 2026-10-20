@@ -7,11 +7,12 @@ from pathlib import Path
 import time
 from urllib.request import Request, urlopen
 from uuid import uuid4
+import cli_auth
 
 
 def request(base, path, body=None):
     req=Request(base.rstrip('/')+path,data=json.dumps(body).encode() if body is not None else None,
-                headers={'Content-Type':'application/json'},method='POST' if body is not None else 'GET')
+                headers={'Content-Type':'application/json',**cli_auth.headers()},method='POST' if body is not None else 'GET')
     with urlopen(req,timeout=10) as response: return json.load(response)
 
 
@@ -24,6 +25,7 @@ def stamp(value):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base-url',default='http://127.0.0.1:8000')
+    parser.add_argument('--username',help='Username only; password entered at a hidden prompt.')
     parser.add_argument('--vehicle-id',required=True)
     parser.add_argument('--trip-id',required=True)
     parser.add_argument('--fixture',type=Path,required=True)
@@ -31,6 +33,7 @@ def main():
     parser.add_argument('--speed',type=float,default=1,help='Replay rate: 10 means ten fixture seconds per wall-clock second.')
     parser.add_argument('--rebase-to-now',action='store_true',help='Use a current compressed simulation timeline; otherwise preserve fixture timestamps.')
     args=parser.parse_args()
+    cli_auth.configure(args.base_url,args.username)
     import math
     if not math.isfinite(args.speed) or args.speed<=0: parser.error('--speed must be finite and positive.')
     trip=request(args.base_url,'/trips/'+args.trip_id)
@@ -62,7 +65,8 @@ def main():
     # Validate every row before ingesting any. Source is always simulation, regardless of CSV source.
     for row,recorded in zip(rows,times):
         PositionInput(sample_id='validation',trip_id=args.trip_id,source='simulation',recorded_at=recorded,
-            latitude=float(row['latitude']),longitude=float(row['longitude']),speed_mps=float(row['speed_mps']) if row.get('speed_mps') else None)
+            latitude=float(row['latitude']),longitude=float(row['longitude']),speed_mps=float(row['speed_mps']) if row.get('speed_mps') else None,
+            accuracy_m=float(row['accuracy_m']) if row.get('accuracy_m') else None)
     print(f'SIMULATION ONLY / {args.vehicle_id} / {args.trip_id} / {len(rows)} samples. Synthetic movement, not a driven road trace.')
     input('Press Enter to start; Ctrl+C stops without ending or changing the trip. ')
     start=datetime.now(timezone.utc); clock=time.monotonic(); run=uuid4().hex
@@ -74,7 +78,8 @@ def main():
             sample={'sample_id':f'replay-{run}-{index}','trip_id':args.trip_id,'source':'simulation',
                 'recorded_at':(start+timedelta(seconds=offset)).isoformat() if args.rebase_to_now else recorded.isoformat(),
                 'latitude':float(row['latitude']),'longitude':float(row['longitude']),
-                'speed_mps':float(row['speed_mps']) if row.get('speed_mps') else None}
+                'speed_mps':float(row['speed_mps']) if row.get('speed_mps') else None,
+                'accuracy_m':float(row['accuracy_m']) if row.get('accuracy_m') else None}
             response=request(args.base_url,f'/routing/vehicles/{args.vehicle_id}/positions',sample)
             print(f'{index+1}/{len(rows)} simulation / duplicate={response["duplicate"]} / advances_latest={response["advances_latest"]}')
     except KeyboardInterrupt:

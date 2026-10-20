@@ -1,5 +1,7 @@
 # SafeRide-LK: real-data readiness audit
 
+> Authentication follow-up, 18 October 2026: mandatory login, account/object permissions and scoped tracking authorization are now implemented; migration head is 0014_authentication. The findings below remain a historical pre-authentication snapshot. See [current authentication, private setup and verification](authentication-and-device-access.md). This does not establish phone measurement accuracy or production readiness.
+
 > Follow-up, 17 October 2026: the five fixture positions identified below were subsequently corrected with append-only audits; migration head is now 0013_fixture_provenance. Counts and test totals in this audit describe its original pre-correction snapshot. See [provenance correction, current counts and regression checks](provenance-correction.md). No model retraining occurred.
 
 **17 October 2026, Asia/Colombo.** This is an implementation/evidence audit, not a production-readiness certification. No completion percentage is assigned. Simulation remains useful and was preserved.

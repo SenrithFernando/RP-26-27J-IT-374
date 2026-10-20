@@ -45,6 +45,9 @@ def google_geocode(address: str, key: str):
         return {"latitude": latitude, "longitude": longitude,
                 "formatted_address": match["formatted_address"], "provider": "google",
                 "partial_match": bool(match.get("partial_match", False)),
+                "candidate_count": len(body['results']),
+                "ambiguous": bool(match.get('partial_match')) or len(body['results']) > 1,
+                "location_type": match.get('geometry',{}).get('location_type','unknown'),
                 "location_confirmed": False}
     except (KeyError, IndexError, TypeError, ValueError):
         raise HTTPException(502, "Geocoding provider returned an invalid location. Place the pin manually.") from None

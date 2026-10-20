@@ -18,6 +18,8 @@ from positions import router
 from test_trip_lifecycle import Client
 
 app=FastAPI(); app.include_router(router)
+from domain_http_context import install_domain_context
+install_domain_context(app)  # Domain-only harness; production authorization tested in test_access_control.
 
 @unittest.skipUnless(os.getenv('SAFERIDE_RUN_DB_TESTS')=='1','Opt in to isolated PostgreSQL fixtures.')
 class PositionTests(unittest.TestCase):

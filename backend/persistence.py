@@ -162,10 +162,18 @@ def validate_vehicle(session: Session, vehicle_id: str):
         raise HTTPException(422, "Select an existing vehicle.")
 
 
-def validate_assignment(session: Session, payload: StudentWrite):
+def validate_scenario_membership(session, vehicle_id, student_id=None):
+    from landmark import scenario_for_vehicle
+    scenario = scenario_for_vehicle(session, vehicle_id)
+    if scenario and student_id not in scenario.policy['student_ids']:
+        raise HTTPException(422, 'This isolated landmark vehicle accepts only its explicit scenario participants. An unrelated registration would not enter its dated attendance roster; use a separate vehicle or extend the reviewed integration contract first.')
+
+
+def validate_assignment(session: Session, payload: StudentWrite, student_id=None):
     if session.get(School, payload.school_id) is None:
         raise HTTPException(422, "Select an existing school.")
     validate_vehicle(session, payload.vehicle_id)
+    validate_scenario_membership(session, payload.vehicle_id, student_id)
 
 
 @router.post("/students", response_model=StudentMutationRecord, status_code=201)
@@ -185,7 +193,7 @@ def update_student(student_id: str, payload: StudentWrite, session: Session = De
                    request_key: str | None = Header(default=None, alias="Idempotency-Key", min_length=1, max_length=128)):
     def change():
         student = find_student(session, student_id); before = columns(student)
-        validate_assignment(session, payload)
+        validate_assignment(session, payload, student_id)
         old_vehicle = student.vehicle_id
         for key, value in payload.model_dump().items(): setattr(student, key, value)
         return student, [old_vehicle, student.vehicle_id], before
@@ -210,6 +218,7 @@ def transfer_student(student_id: str, payload: StudentTransfer, session: Session
     def change():
         student = find_student(session, student_id); before = columns(student)
         validate_vehicle(session, payload.vehicle_id)
+        validate_scenario_membership(session, payload.vehicle_id, student_id)
         old_vehicle = student.vehicle_id; student.vehicle_id = payload.vehicle_id
         return student, [old_vehicle, student.vehicle_id], before
     return mutate_and_plan(session, event_type="student_transferred", entity_id=student_id, payload=payload.model_dump(),

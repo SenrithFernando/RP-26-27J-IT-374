@@ -115,7 +115,7 @@ class RouteStop(Base):
     location_id: Mapped[str] = mapped_column(String(128))
     latitude: Mapped[float]
     longitude: Mapped[float]
-    eta_seconds: Mapped[int]
+    eta_seconds: Mapped[int | None]
     details: Mapped[dict] = mapped_column(JSONB)
     __table_args__ = (
         CheckConstraint("sequence > 0", name="route_stop_sequence_positive"),
@@ -484,3 +484,39 @@ class LandmarkDailyPlan(Base):
     route_id: Mapped[str|None]=mapped_column(ForeignKey('route_versions.id'))
     publication: Mapped[str]=mapped_column(String(16),default='draft')
     review: Mapped[dict]=mapped_column(JSONB,default=dict)
+
+
+class ResearchCollection(Base):
+    __tablename__='research_collections'
+    trip_id: Mapped[str]=mapped_column(ForeignKey('trips.id'),primary_key=True)
+    dataset: Mapped[str]=mapped_column(String(40))
+    protocol: Mapped[dict]=mapped_column(JSONB)
+    actor_id: Mapped[str]=mapped_column(ForeignKey('accounts.id'))
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    __table_args__=(CheckConstraint("dataset IN ('synthetic','stationary_adult_phone','moving_adult_landmark','authorized_operational')",name='research_dataset'),)
+
+
+class TravelObservation(Base):
+    __tablename__='travel_observations'
+    id: Mapped[str]=mapped_column(String(64),primary_key=True)
+    family_id: Mapped[str]=mapped_column(String(64))
+    revision: Mapped[int]
+    previous_id: Mapped[str|None]=mapped_column(ForeignKey('travel_observations.id'))
+    trip_id: Mapped[str]=mapped_column(ForeignKey('research_collections.trip_id'))
+    route_id: Mapped[str]=mapped_column(ForeignKey('route_versions.id'))
+    dataset: Mapped[str]=mapped_column(String(40))
+    status: Mapped[str]=mapped_column(String(12))
+    raw: Mapped[dict]=mapped_column(JSONB)
+    analysis: Mapped[dict]=mapped_column(JSONB)
+    actor_id: Mapped[str]=mapped_column(ForeignKey('accounts.id'))
+    reason: Mapped[str]=mapped_column(String(1000))
+    created_at: Mapped[datetime]=mapped_column(DateTime(timezone=True))
+    __table_args__=(UniqueConstraint('family_id','revision',name='observation_revision_once'),
+        CheckConstraint("status IN ('pending','accepted','rejected')",name='observation_status'),
+        Index('observation_trip_family','trip_id','family_id','revision'))
+
+
+class SegmentEstimate(Base):
+    __tablename__='segment_estimates'
+    observation_id: Mapped[str]=mapped_column(ForeignKey('travel_observations.id'),primary_key=True)
+    snapshot: Mapped[dict]=mapped_column(JSONB)

@@ -59,6 +59,8 @@ export function PersistentNotifications({recipient,allowedStudentIds}:{recipient
         <p>Deadline event: {time(notice.occurred_at)} / Created: {time(notice.created_at)} (Sri Lanka)</p>
         <p>{notice.mode==='simulation_demo'?'Simulation demo window':'Production-duration window'} / Arrival source: {notice.position_source==='simulation'?'Simulation':notice.position_source==='actual_device'?'Actual device input (reported)':'Unavailable'} / {notice.action_source}</p>
         <p className="font-semibold">In-app event created / {notice.read?'Read':'Unread'}</p>
+        <p>Alert generation: {notice.generation_status??'in_app_event_created'}. Hasara parent-channel delivery: {notice.parent_channel_status??'Unavailable — not connected'}.</p>
+        {notice.resolution_status&&<p>Resolution: {notice.resolution_status}{notice.resolved_at?` / ${time(notice.resolved_at)} (Sri Lanka)`:''}. Original event/history retained.</p>}
         {notice.read_at&&<p>Read at: {time(notice.read_at)}</p>}
         <button disabled={!!saving} onClick={()=>void mark(notice.id,!notice.read)} className="text-[#176B87] underline disabled:opacity-40">{notice.read?'Mark unread':'Mark read'}</button>
       </li>)}</ol>

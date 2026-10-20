@@ -23,6 +23,23 @@ def local_timestamp(service_date, seconds):
     return (midnight + timedelta(seconds=seconds)).isoformat()
 
 
+def saved_stop_location_confirmed(version, stop):
+    """Confirmation comes from the immutable input snapshot, not today's registration."""
+    snapshot=version.input_snapshot or {};location=None
+    if snapshot.get('research_journey'):
+        location=snapshot.get('research_locations',{}).get(stop.location_id)
+        return bool(location and location.get('confirmed') is True and location.get('latitude')==stop.latitude and location.get('longitude')==stop.longitude)
+    vehicle=snapshot.get('vehicle',{})
+    if stop.location_id==vehicle.get('id','')+':start':location=vehicle.get('start')
+    elif stop.location_id==vehicle.get('id','')+':end':location=vehicle.get('end')
+    elif stop.location_id in snapshot.get('schools',{}):location=snapshot['schools'][stop.location_id].get('location')
+    else:
+        person=next((p for p in snapshot.get('students',[]) if p.get('home_id')==stop.location_id),None)
+        if person:location=person.get('home')
+    return bool(location and location.get('confirmed') is True and
+        location.get('latitude')==stop.latitude and location.get('longitude')==stop.longitude)
+
+
 def serialize_version(session: Session, version: RouteVersion):
     # Stored JSON and ordered stop rows only. No provider or solver call here.
     stops = session.scalars(select(RouteStop).where(RouteStop.route_id == version.id).order_by(RouteStop.sequence)).all()
@@ -34,12 +51,13 @@ def serialize_version(session: Session, version: RouteVersion):
             "departure": local_timestamp(version.service_date, version.departure_seconds),
             "generated_at": version.created_at.isoformat(), "timezone": "Asia/Colombo",
             "request_settings": version.request_settings, "stops": [
-                {**stop.details, 'student_name': student_names.get(stop.student_id),
+                {**stop.details, 'location_confirmed':saved_stop_location_confirmed(version,stop), 'student_name': student_names.get(stop.student_id),
                  'school_name': school_names.get(stop.details.get('school_id'))} for stop in stops]}
 
 
 def latest_route(session: Session, vehicle_id: str, direction: str):
     version = session.scalar(select(RouteVersion).where(RouteVersion.vehicle_id == vehicle_id, RouteVersion.direction == direction)
+                             .where(RouteVersion.input_snapshot['research_journey'].is_(None))
                              .order_by(RouteVersion.version.desc()).limit(1))
     if version is None:
         raise HTTPException(404, f"No stored {direction} route for {vehicle_id}. Generate it first.")
@@ -60,6 +78,9 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
         raise HTTPException(404, "Registered vehicle not found.")
     from landmark import scenario_for_vehicle,prepare_context,attach_plan
     landmark=scenario_for_vehicle(session,vehicle_row.id)
+    if request.departure_mode!='fixed' and not landmark:
+        raise HTTPException(422,'Departure recommendation/override is scoped to the verified Malabe scenario.')
+    if request.departure_mode=='recommend':request=request.model_copy(update={'include_geometry':False})
     daily_context=None
     # Lock inactive registrations too: reactivation cannot change the roster mid-solve.
     registered_rows = session.scalars(select(Student).where(Student.vehicle_id == vehicle_row.id)
@@ -88,7 +109,19 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
         if request.direction=='afternoon':vehicle=RegisteredVehicle(vehicle.id,vehicle.capacity,schools[sorted(schools)[1]].location,vehicle.end)
         else:vehicle=RegisteredVehicle(vehicle.id,vehicle.capacity,vehicle.start,vehicle.start)
         if daily_context['attendance']['unknown_attendance']:result=failure('attendance_unresolved',['Unknown dated attendance; explicitly record yes/no before generating a complete plan.'])
-        else:result=solve_landmark(vehicle,students,schools,settings,provider)
+        elif request.departure_mode=='recommend':
+            from departure_recommendation import recommend
+            result,selected= recommend(vehicle,students,schools,settings,provider,live_budget=request.recommendation_live_budget,google=request.provider=='google')
+            if selected is not None:request=request.model_copy(update={'departure_seconds':selected})
+        else:
+            result=solve_landmark(vehicle,students,schools,settings,provider)
+            if request.direction=='morning' and request.departure_mode=='override':
+                from departure_recommendation import override_evidence
+                result['departure_recommendation']=override_evidence(result,request.departure_seconds)
+        if result.get('departure_recommendation'):
+            result['departure_recommendation'].update(input_fingerprint=daily_context['fingerprint'],
+                schools=[{'school_id':s['school_id'],'name':s['name'],'arrival_seconds':s['eta_seconds'],'departure_seconds':s['departure_seconds']} for s in result['stops'] if s.get('grouped')],
+                total_duration_seconds=result.get('total_duration_seconds'),provider=result.get('provider_source'))
         result['daily']={'scenario_id':landmark.id,'provenance':daily_context['provenance'],'attendance':daily_context['attendance']}
     else:
         result = solve_registered_route(vehicle, students, schools, settings, provider) if students else failure("empty", ["No active students assigned; no pre-trip route is required."])
@@ -99,6 +132,8 @@ def generate_and_store(session: Session, request: GenerateRouteRequest, *, commi
             result['road_geometry'] = provider.live.geometry(result['stops'], stamp, request.force_live_failure)
         else:
             result['road_geometry'] = {'status': 'unavailable', 'reason': 'Live matrix was unavailable; no additional road-geometry request was made. Showing stop sequence.'}
+        # Geometry shares the same bounded transport; persist its consumption too.
+        result['provider_source']['live_http_requests'] = provider.live_http_requests
     if result["provider_source"] is None:
         result["provider_source"] = {"provider": "unavailable", "duration_source": "unavailable", "requested_provider": request.provider,
                                      "distance_source": "haversine_straight_line", "distance_is_approximate": True,

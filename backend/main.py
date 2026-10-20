@@ -8,6 +8,8 @@ from auth import authorize, router as auth_router
 from tracking import router as tracking_router
 from account_admin import router as account_admin_router
 from exports_api import router as exports_router
+from research_observations import router as research_router
+from research_routes import router as research_routes_router
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -55,6 +57,8 @@ app.include_router(auth_router)
 app.include_router(tracking_router)
 app.include_router(account_admin_router)
 app.include_router(exports_router)
+app.include_router(research_router)
+app.include_router(research_routes_router)
 app.include_router(persistence_router)
 app.include_router(geocoding_router)
 app.include_router(locations_router)
