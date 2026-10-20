@@ -17,17 +17,19 @@ const fs=require('node:fs'),path=require('node:path');
    route.feasibility_status=available?'feasible':'unavailable';route.is_current=available;route.provider_source={requested_provider:'google',duration_source:available?'ml_prediction':'unavailable',model_version:available?report.model_version:null,fallback_reasons:[available?'Forced live adapter failure; loaded ML used.':'Model unavailable; no prediction.'],force_live_failure:true,live_http_requests:0};
    return send(day);
   }
-  return send([],200);
+  return send({detail:'Isolated endpoint unavailable'},404);
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- async function open(){await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Daily Plan',exact:true}).click();await page.getByText('Synthetic-trained ML evaluation',{exact:true}).click();}
+ async function open(){await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Research & Testing',exact:true}).click();await page.getByRole('button',{name:'Evaluation',exact:true}).click();await page.getByText('Synthetic-trained ML evaluation',{exact:true}).click();}
  await open();await page.getByText('Samples: 2000 total / 1500 development / 500 untouched final test; 400 synthetic trips.',{exact:true}).waitFor();
  await page.getByRole('cell',{name:'28.013 / 0.467',exact:true}).waitFor();await page.getByRole('cell',{name:'57.087 / 0.951',exact:true}).waitFor();
+ await page.getByText('Chronological folds and prediction-time feature schema',{exact:true}).click();await page.getByText(/Fold 4: train 1250/).waitFor();
+ await page.getByRole('button',{name:'School test tools',exact:true}).click();await page.getByText('Provider details and request usage',{exact:true}).first().click();
  await page.getByText(/Requested: google.*Actual route source: ml_prediction/).waitFor();
  await page.getByText('Fallback/unavailable reason: Forced live adapter failure; loaded ML used.',{exact:true}).waitFor();
- await page.getByText('Chronological folds and prediction-time feature schema',{exact:true}).click();await page.getByText(/Fold 4: train 1250/).waitFor();
  available=false;await open();await page.getByText('Model unavailable: Isolated missing-model fixture',{exact:true}).waitFor();
  assert.equal(await page.getByRole('cell',{name:'28.013 / 0.467',exact:true}).count(),0);
+ await page.getByRole('button',{name:'School test tools',exact:true}).click();await page.getByText('Provider details and request usage',{exact:true}).first().click();
  await page.getByText(/Requested: google.*Actual route source: Unavailable/).waitFor();assert.deepEqual(errors,[]);
  console.log(JSON.stringify({checks:['saved synthetic metrics/counts/baseline visible','chronological ranges and schema expandable','Google request accurately labelled ML fallback with model version/reason','unavailable model has no fabricated metrics or predictions','mobile viewport and no page errors'],scope:'intercepted synthetic UI only; no paid calls'},null,2));
 }finally{await browser.close();}})().catch(e=>{console.error(e.message);process.exitCode=1;});

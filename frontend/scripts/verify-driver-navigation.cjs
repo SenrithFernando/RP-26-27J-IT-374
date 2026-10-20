@@ -35,7 +35,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    return send({detail:'Synthetic evidence unavailable'},404);
   });
   const page=await context.newPage();page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
+  await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByText('Change vehicle, date or direction',{exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
   await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();
   const panel=page.getByRole('region',{name:'Next stop navigation',exact:true});const link=panel.getByRole('link',{name:'Navigate to next stop',exact:true});
   await link.waitFor();const href=await link.getAttribute('href');let u=new URL(href);

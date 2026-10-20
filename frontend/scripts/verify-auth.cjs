@@ -20,7 +20,7 @@ let phase='initial';
       else await route.abort();
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-    await page.goto('http://localhost:5173');
+    await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');
     await page.getByRole('heading',{name:'SafeRide-LK login'}).waitFor();
     assert.equal(await page.getByRole('heading',{name:'Choose Interface'}).count(),0);
     async function login(role,mode='real'){
@@ -44,7 +44,7 @@ let phase='initial';
     assert.deepEqual(options,[config.students[0]]);
     assert.equal(await status('/parent/students/'+config.students[1]),403);
     assert.equal(await page.getByRole('heading',{name:'Choose Interface'}).count(),0);
-    phase='admin login';await logout();await login('admin');await page.getByRole('button',{name:'Access',exact:true}).click();
+    phase='admin login';await logout();await login('admin');await page.getByRole('button',{name:'Setup',exact:true}).click();await page.getByRole('button',{name:'Access',exact:true}).click();
     await page.getByRole('heading',{name:'Accounts and access',exact:true}).waitFor();
     phase='admin directory';await page.getByLabel('Manage account').locator('option').nth(1).waitFor({state:'attached'});
     phase='demo login';await logout();await login('admin','demo');

@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Bus, Loader2, MapPin, Route, Zap } from 'lucide-react';
 import { useAppContext } from '../contexts/AppContext';
 import { AlternativeComparison, SourceBadge, sourceName, TrafficRouteMap } from '../components/TrafficDetails';
-import { RouteComparisonView, RoutingOutcomeNotice } from '../components/RoutingOutcomeNotice';
+import { RoutingOutcomeNotice } from '../components/RoutingOutcomeNotice';
 import { LocationSetup } from '../components/RouteLocations';
 import { routePoints } from '../services/routePresentation';
 import {
@@ -176,7 +176,7 @@ export function RouteOptimization() {
             {route.provider_source?.warnings?.map((warning) => <p key={warning} className="text-amber-800">{warning}</p>)}
           </div>}
           {route && <AlternativeComparison route={route} />}
-          <details className="text-xs"><summary className="cursor-pointer text-slate-500">Historical before/after (different snapshots; not traffic savings)</summary><RouteComparisonView value={current?.plan?.comparison ?? route?.comparison ?? {}} /></details>
+
           <p className="text-xs text-slate-500">Distances and durations use the labelled sources. Service is configured; waiting is calculated. Provider estimates and ML predictions are not measured journey times.</p>
           <p className="text-xs text-slate-500">This demonstrates a synthetic-data ML pipeline. Real-world accuracy has not yet been established.</p>
         </div>
@@ -225,11 +225,11 @@ export function RouteOptimization() {
         {!feasible && <p className="text-sm text-slate-500 p-5">{loading ? 'Loading stored stops...' : generating ? 'Waiting for the backend solver...' : 'No feasible itinerary to display.'}</p>}
       </div>
     </div>
-    <details className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-      <summary className="font-semibold text-[#17212B] cursor-pointer">School schedules (Asia/Colombo)</summary>
+    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+      <h2 className="font-semibold text-[#17212B]">School schedules (Asia/Colombo)</h2>
       <p className="text-xs text-slate-500 mt-3">Set morning arrival deadlines and afternoon finish times. Blank values are unknown and block generation for the affected school. Saving schedules automatically refreshes affected pre-trip routes using saved generation settings.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">{schools.map((school) => <SchoolScheduleEditor key={`${school.id}:${school.morning_deadline_seconds}:${school.afternoon_finish_seconds}`} school={school} onSaved={(saved) => { setSchools((prev) => prev.map((entry) => entry.id === saved.id ? saved : entry)); setNotice('School schedule saved. See the backend planning outcome above.'); }} />)}</div>
-    </details>
+    </section>
     {setup && vehicleId && <LocationSetup schools={schools} vehicles={vehicles} defaultVehicle={vehicleId} onClose={() => setSetup(false)} onSaved={() => { setSetup(false); setRevision((value) => value + 1); }} />}
   </div>;
 }

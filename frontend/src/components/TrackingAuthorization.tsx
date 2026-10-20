@@ -27,18 +27,18 @@ export function TrackingAuthorization({vehicleId,trip,synthetic}:{vehicleId:stri
   return <section aria-label="Tracking authorization" className="bg-white border rounded-xl p-4 space-y-3 text-xs">
     <h3 className="font-bold text-sm">Vehicle-bound tracking authorization</h3>{trip?.adult_phone_field_test_authorized&&<p className="text-amber-800">Authorized adult landmark phone test. Physical GPS is recorded separately from demonstration planning inputs and excluded from measured student-trip exports. Approval expires within two hours.</p>}
     <p>{simulationSender?'Simulation sender only; samples are never labelled actual device.':'Phone credential only; backend derives vehicle, trip and source.'} Logout, expiry, reassignment or revocation removes authorization. Closed-trip queued samples are rejected.</p>
-    {simulationSender&&<p className="text-amber-800">Actual phone Start sharing requires an eligible active trip. For VAN_01's adult landmark test, an administrator must explicitly approve this trip in Access, then refresh Driver. Other synthetic fixtures remain blocked; simulation enrollment does not collect phone GPS.</p>}
-    {trip?.state!=='ACTIVE'&&<p>Start sharing requires an ACTIVE trip. Create and start a current feasible saved plan in Persistent trip lifecycle below, then enroll the phone sender.</p>}
+    {simulationSender&&<p className="text-amber-800">Actual phone Start sharing requires an eligible active trip. For VAN_01's adult landmark test, an administrator must explicitly approve this trip in Setup / Access, then refresh Driver. Other synthetic fixtures remain blocked; simulation enrollment does not collect phone GPS.</p>}
+    {trip?.state!=='ACTIVE'&&<p>Start sharing requires an ACTIVE trip. Create and start a current feasible saved plan in trip controls above, then enroll the phone sender.</p>}
     {operatorMismatch&&<p role="status">Missing prerequisite: log in as the separately selected research operator to enroll/capture GPS. The assigned driver operates trip/navigation controls.</p>}
     {trip?.route.research_journey&&!trip.adult_phone_field_test_authorized&&<p>Missing prerequisite: administrator adult phone-test approval is missing or expired. Research trips never fall back to a simulation sender.</p>}
-    <button disabled={saving||trip?.state!=='ACTIVE'||operatorMismatch||!!trip?.route.research_journey&&!trip.adult_phone_field_test_authorized} onClick={()=>void enroll()} className="rounded bg-[#176B87] text-white px-3 py-2 disabled:opacity-40">Enroll {simulationSender?'simulation':'phone'} sender for active trip</button>
+    {!operatorMismatch&&<button disabled={saving||trip?.state!=='ACTIVE'||operatorMismatch||!!trip?.route.research_journey&&!trip.adult_phone_field_test_authorized} onClick={()=>void enroll()} className="rounded bg-[#176B87] text-white px-3 py-2 disabled:opacity-40">Enroll {simulationSender?'simulation':'phone'} sender for active trip</button>}
     {credential&&!simulationSender&&trip?.state==='ACTIVE'&&<PhoneGpsCapture key={`${vehicleId}:${trip.trip_id}:${credential}`} credential={credential} expiresAt={expiresAt}/>}
     {credential&&simulationSender&&<div className="bg-amber-50 p-3 rounded space-y-2"><p>Private simulation credential shown once in this tab. Treat it like a password; do not put it in URLs, screenshots or logs. Enrollment does not itself collect GPS.</p>
       <input aria-label="Private tracking credential" type="password" readOnly value={credential} className="border rounded p-2 w-full"/>
       <button onClick={()=>{void navigator.clipboard.writeText(credential).catch(()=>setError('Clipboard unavailable; use the private credential field.'));}} className="underline">Copy privately to your authorized sender</button></div>}
     {error&&<p role="alert" className="text-red-700">{error}</p>}
-    <ul>{rows.slice(-10).map(row=><li key={row.id} className="border-t py-2 break-all">{row.label} / {row.id} / {row.kind} / trip {row.trip_id}<br/>
+    <details><summary className="cursor-pointer">Tracking sessions and revocation history</summary><ul>{rows.slice(-10).map(row=><li key={row.id} className="border-t py-2 break-all">{row.label} / {row.id} / {row.kind} / trip {row.trip_id}<br/>
       Expires {new Date(row.expires_at).toLocaleString('en-GB',{timeZone:'Asia/Colombo'})} (Sri Lanka) / {row.revoked_at?'Revoked':'Issued'}
-      {!row.revoked_at&&<button disabled={saving} onClick={()=>void revoke(row.id)} className="ml-2 text-red-700 underline">Revoke</button>}</li>)}</ul>
+      {!row.revoked_at&&<button disabled={saving} onClick={()=>void revoke(row.id)} className="ml-2 text-red-700 underline">Revoke</button>}</li>)}</ul></details>
   </section>;
 }

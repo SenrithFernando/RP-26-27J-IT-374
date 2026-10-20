@@ -27,33 +27,33 @@ const assert=require('node:assert/strict');
       return respond({detail:'Unconfigured UI fixture endpoint'},404);
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-    try{await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');await page.getByRole('button',{name:'Log out',exact:true}).waitFor();await check(page);assert.deepEqual(errors,[]);passed.push(`${role}: ${mode}`);}finally{await context.close();}
+    try{await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');await page.getByRole('button',{name:'Log out',exact:true}).waitFor();if(role==='administrator'&&mode!=='demo-workspace')await page.getByRole('button',{name:'Live Tracking',exact:true}).click();await check(page);assert.deepEqual(errors,[]);passed.push(`${role}: ${mode}`);}finally{await context.close();}
   }
   try{
     await scenario('administrator','failure',async p=>{
-      await p.getByText('Fleet unavailable:',{exact:false}).waitFor();
+      await p.getByText('Vehicles could not be loaded.',{exact:false}).waitFor();
       assert.equal(await p.getByText('BUS-01',{exact:false}).count(),0);
-      await p.getByRole('button',{name:'Routes',exact:true}).click();await p.getByText('Controlled backend unavailable',{exact:false}).first().waitFor();
-      await p.getByRole('button',{name:'Notifications',exact:true}).click();await p.getByText('No mock events are substituted.',{exact:false}).waitFor();
+      await p.getByRole('button',{name:'Research & Testing',exact:true}).click();await p.getByRole('button',{name:'Routes',exact:true}).click();await p.getByText('Controlled backend unavailable',{exact:false}).first().waitFor();
+      await p.getByRole('button',{name:'Alerts',exact:true}).click();await p.getByText('No mock events are substituted.',{exact:false}).waitFor();
     });
-    await scenario('administrator','empty',async p=>{await p.getByText('No authorized vehicles.',{exact:true}).waitFor();});
+    await scenario('administrator','empty',async p=>{await p.getByLabel('Fleet vehicle',{exact:true}).getByText('No vehicles available',{exact:true}).waitFor({state:'attached'});});
     await scenario('administrator','no-trip-no-gps',async p=>{
-      await p.getByText('No active trip or saved trip returned.',{exact:true}).waitFor();
-      await p.getByText('No saved morning route.',{exact:true}).waitFor();
-      await p.getByText('Position, speed and live arrival estimate: Unavailable.',{exact:false}).waitFor();
+      await p.getByText('No trip is currently active.',{exact:true}).waitFor();
+      await p.getByText('No saved route to display.',{exact:true}).waitFor();
+      await p.getByText('Previous journeys are not shown as live tracking.',{exact:false}).waitFor();
     });
     await scenario('administrator','saved-stale-gps',async p=>{
-      await p.getByText('Latest planning route: UI_ROUTE_LATEST / version 9',{exact:false}).waitFor();
-      await p.getByText('Pinned route: UI_ROUTE_OLD / version 8',{exact:true}).waitFor();
-      await p.getByText('Vehicle position: stale',{exact:true}).waitFor();
-      await p.getByText('Actual-device position: Unavailable.',{exact:false}).waitFor();
-      await p.getByText('historical sample; current speed unavailable',{exact:false}).waitFor();
-      await p.getByText('Google traffic-aware estimate',{exact:true}).waitFor();
+      await p.getByText('Trip in progress',{exact:true}).waitFor();assert.equal(await p.getByLabel('Fleet direction',{exact:true}).isDisabled(),true);
+      await p.getByText('Version 8',{exact:false}).waitFor();
+      await p.getByText('Signal out of date',{exact:true}).waitFor();
+      await p.getByText('Simulated GPS',{exact:false}).waitFor();
+      await p.getByText('Current movement is unknown.',{exact:false}).waitFor();
+      assert.equal(await p.getByText('Google Maps traffic-aware estimate',{exact:true}).count(),0);
       await p.getByText('ML prediction',{exact:false}).waitFor();
     });
     await scenario('driver','no-trip-no-gps',async p=>{
       await p.getByText('No persisted trip for this vehicle.',{exact:true}).waitFor();
-      await p.getByText('No GPS observation is available.',{exact:false}).waitFor();
+      await p.getByText('Waiting for the tracking phone to send its position.',{exact:false}).waitFor();
       assert.equal(await p.getByText('BUS-01',{exact:false}).count(),0);
     });
     await scenario('driver','failure',async p=>{await p.getByText('Vehicles unavailable:',{exact:false}).waitFor();});

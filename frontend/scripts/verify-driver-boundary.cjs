@@ -20,7 +20,7 @@ const assert=require('node:assert/strict');
    return respond({detail:'No isolated fixture endpoint'},404);
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');
-  await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
+  await page.getByText('Change vehicle, date or direction',{exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
   await page.getByText('No current published morning route',{exact:false}).waitFor();
   assert.equal(requests.at(-1).date,'2026-10-19');assert.equal(requests.at(-1).vehicle,'MALABE_PP1_VAN_01');
   await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();

@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+import { vehicleLabel } from '../services/uiFormat';
+import { useState } from 'react';
 import { retryRoutingEvent, RouteComparison, RoutingOutcome } from '../services/api';
 
 export function RouteComparisonView({ value }: { value: Partial<RouteComparison> }) {
@@ -28,16 +29,11 @@ export function RoutingOutcomeNotice({ outcome, title = 'Input saved' }: { outco
   const heading = failed ? `${title}; routing failed` : outcome.outcome === 'deferred' ? `${title}; active/completed trip unchanged` : outcome.outcome === 'unchanged' ? `${title}; inputs unchanged` : outcome.outcome === 'superseded' ? `${title}; a newer change owns the plan` : `${title}; pre-trip routes refreshed`;
   return <section role={failed ? 'alert' : 'status'} className={`rounded-xl p-4 border text-sm space-y-3 ${failed ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-blue-50 border-blue-100 text-slate-700'}`}>
     <p className="font-semibold">{heading}</p>
-    <p className="text-xs break-all">Event {outcome.event_id} · {outcome.trigger_event ?? 'routing event'} · {outcome.generation_status}</p>
     {outcome.errors.length > 0 && <ul className="list-disc pl-5">{outcome.errors.map((message) => <li key={message}>{message}</li>)}</ul>}
-    {outcome.plans.map((plan) => <details key={`${plan.vehicle_id}:${plan.direction}`} className="border-t border-slate-200 pt-2">
-      <summary className="cursor-pointer font-medium">{plan.vehicle_id} · {plan.direction} · roster {plan.roster_version} · {plan.generation_status}</summary>
-      <div className="space-y-2 mt-2">
-        <p className="text-xs">Route version: {plan.route_version ?? 'Not generated'} · Solver runtime: {plan.solver_runtime_seconds == null ? 'Not run' : `${plan.solver_runtime_seconds} s`}<br />Generated: {plan.generation_timestamp ?? 'Not generated'}</p>
-        {plan.errors?.map((message) => <p key={message} className="text-xs">{message}</p>)}
-        <RouteComparisonView value={plan.comparison} />
-      </div>
-    </details>)}
+    <ul className="space-y-2">{outcome.plans.map(plan => <li key={`${plan.vehicle_id}:${plan.direction}`} className="border-t border-slate-200 pt-2">
+      <p className="font-medium">{vehicleLabel(plan.vehicle_id)} · {plan.direction === 'morning' ? 'Morning' : 'Afternoon'} route · {plan.generation_status.replace(/_/g, ' ')}{plan.route_version != null ? ` · Version ${plan.route_version}` : ''}</p>
+      {plan.errors?.map(message => <p key={message} className="mt-1 text-xs text-amber-900">{message}</p>)}
+    </li>)}</ul>
     {failed && (outcome.generation_status === 'pending' || outcome.plans.some((plan) => plan.generation_status === 'error')) && <button type="button" disabled={retrying} className="font-medium underline disabled:opacity-50" onClick={async () => {
       setRetrying(true); setError('');
       try { await retryRoutingEvent(outcome.event_id); } catch (failure) { setError(failure instanceof Error ? failure.message : 'Routing retry failed.'); }

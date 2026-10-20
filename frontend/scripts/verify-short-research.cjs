@@ -16,7 +16,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   return send({detail:'No synthetic fixture'},404);
  });
  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Adult research',exact:true}).click();
+ await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Research & Testing',exact:true}).click();await page.getByRole('button',{name:'Adult research',exact:true}).click();
  await page.getByRole('heading',{name:'Adult research — A → B → C → A',exact:true}).waitFor();
  const save=page.getByRole('button',{name:'Save reviewed research route',exact:true});assert.equal(await save.isDisabled(),true);
  assert.equal(await page.getByLabel('Research travel mode',{exact:true}).inputValue(),'');

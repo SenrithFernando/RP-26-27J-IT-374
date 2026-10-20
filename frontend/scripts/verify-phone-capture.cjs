@@ -16,7 +16,7 @@ const assert=require('node:assert/strict');
    if(u.pathname.startsWith('/api/'))return r.fulfill({status:401,body:'{}'});
    return ['localhost','127.0.0.1'].includes(u.hostname)?r.continue():r.abort();
   });
-  await page.goto('http://localhost:5173');
+  await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');
   await page.evaluate(async mode=>{
    Object.defineProperty(navigator,'geolocation',{configurable:true,value:{watchPosition(ok,fail){window.phoneOk=ok;window.phoneFail=fail;return 1;},clearWatch(){window.phoneClears=(window.phoneClears||0)+1;}}});
    if(mode==='offline')Object.defineProperty(navigator,'onLine',{configurable:true,value:false});

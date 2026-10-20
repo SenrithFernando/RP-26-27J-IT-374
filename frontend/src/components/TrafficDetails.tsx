@@ -15,8 +15,8 @@ export function SourceBadge({ source }: { source?: string }) {
 export function AlternativeComparison({ route }: { route: StoredRoute }) {
   const value = route.alternative_comparison;
   if (!value) return null;
-  return <details className="text-xs border-t border-slate-200 pt-3" open>
-    <summary className="font-semibold cursor-pointer">Alternatives under the same snapshot</summary>
+  return <section className="text-xs border-t border-slate-200 pt-3">
+    <h3 className="font-semibold">Route comparison</h3>
     <p className="mt-2 break-all">Matrix {value.matrix_snapshot_id} · {route.provider_source?.traffic_scenario ?? 'normal'}</p>
     <p className="mt-1">{value.reference_label}. Reference: {value.reference_feasibility_status}.</p>
     {value.reference_errors.map((error) => <p key={error} className="text-amber-800 mt-1">{error}</p>)}
@@ -25,7 +25,7 @@ export function AlternativeComparison({ route }: { route: StoredRoute }) {
     </tbody></table>
     <p className="mt-2">{value.sequence_changed ? 'Stop order differs.' : 'Stop order unchanged.'} Zero and negative differences are retained.</p>
     <p className="mt-1 text-slate-500">{value.note}</p>
-  </details>;
+  </section>;
 }
 
 export function TrafficRouteMap({ route, ...props }: RouteMapProps & { route?: StoredRoute | null }) {
