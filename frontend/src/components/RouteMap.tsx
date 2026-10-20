@@ -113,6 +113,6 @@ export function RouteMap({ points, orderedStops = [], missingLocations = [], loa
     </div>
     {tileError && <div role="alert" className="text-xs text-amber-800 px-3">Some map tiles could not load. Coordinates and markers remain available. <button type="button" className="underline" onClick={() => { setTileError(false); setTilesLoading(true); setTileAttempt((value) => value + 1); }}>Retry tiles</button></div>}
     {!editable && <p className="text-xs font-medium text-slate-600 px-3">Stop sequence — not a road route</p>}
-    <p className="text-[11px] text-slate-500 px-3">OpenStreetMap supplies the basemap tiles, not routing or traffic data.{editable ? ' Drag the pin to correct the position.' : ' Marker numbers follow the backend stop order; other markers are locations only.'}</p>
+    <p className="text-[11px] text-slate-500 px-3">OpenStreetMap basemap only.{editable ? ' Drag the pin to correct the position.' : ''}</p>
   </div>;
 }

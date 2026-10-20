@@ -28,7 +28,7 @@ const fs=require('node:fs'),path=require('node:path');
     return send({detail:'Synthetic endpoint unavailable'},404);
    });
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
-   await page.getByRole('button',{name:'Live Tracking',exact:true}).click();const fleet=page.getByRole('region',{name:'Authorized fleet operations'});
+   await page.getByRole('button',{name:'Live Fleet',exact:true}).click();const fleet=page.getByRole('region',{name:'Authorized fleet operations'});
    if(scenario==='empty'){await fleet.getByLabel('Fleet vehicle').getByText('No vehicles available').waitFor({state:'attached'});}
    else{
     await fleet.getByText('Estimated route duration',{exact:true}).waitFor();
@@ -67,15 +67,15 @@ const fs=require('node:fs'),path=require('node:path');
    if(p==='/api/daily-plan/import')return send({regenerated:[{status:'invalid_input'}]});
    return send({detail:'Synthetic endpoint unavailable'},404);
   });
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);await page.getByRole('button',{name:'Open navigation',exact:true}).click();await page.getByRole('button',{name:'Daily Plan',exact:true}).click();
   const confirmation=page.getByText('Your review has been saved. The published plan is available to the assigned driver.',{exact:true});
   const publish=page.getByRole('button',{name:'Publish reviewed AM plan',exact:true});await publish.waitFor();assert.equal(await confirmation.count(),0);await publish.click();
   await page.waitForFunction(()=>document.querySelector('[role="status"]')?.textContent?.includes('Saving'));
   assert.equal(await confirmation.count(),0);assert.equal(publishCount,1);release();await confirmation.waitFor();
   assert.ok((await confirmation.locator('xpath=../..').getAttribute('class')).includes('bg-emerald-50'));
   await confirmation.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(folder,'ui-update-published-390.png')});
-  reject=true;await publish.click();await page.getByText('Controlled publication rejected',{exact:false}).waitFor();assert.equal(await confirmation.count(),0);
-  await page.getByRole('button',{name:'Save dated attendance',exact:true}).click();const blocked=page.getByText('Input saved; routing is blocked or failed.',{exact:false});await blocked.waitFor();assert.ok((await blocked.locator('xpath=../..').getAttribute('class')).includes('bg-amber-50'));
+  reject=true;publication='draft';await page.getByLabel('Daily Plan service date',{exact:true}).fill('2026-10-22');await publish.waitFor();await publish.click();await page.getByText('Controlled publication rejected',{exact:false}).waitFor();assert.equal(await confirmation.count(),0);
+  await page.getByRole('button',{name:'Edit attendance',exact:true}).click();await page.getByRole('button',{name:'Save dated attendance',exact:true}).click();const blocked=page.getByText('Input saved; routing is blocked or failed.',{exact:false});await blocked.waitFor();assert.ok((await blocked.locator('xpath=../..').getAttribute('class')).includes('bg-amber-50'));
   assert.deepEqual(errors,[]);await context.close();passed.push('publication acknowledgement/rejection/blocked notice');
   console.log(JSON.stringify({passed,viewports:['1366x900','390x844'],scope:'Intercepted source-update merge checks; no database writes, actual phone evidence or paid requests'},null,2));
  }finally{await browser.close();}

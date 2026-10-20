@@ -30,7 +30,7 @@ with server evidence; an `actual_device` label alone is not sensor attestation.
 | Trip state | **COMPLETED**, at **2026-10-19 01:20:07.293656 +05:30** |
 
 All times above are Sri Lankan local time. The machine-readable sanitized
-[checkpoint](physical-phone-stationary-checkpoint.json) records exact inspection
+[checkpoint](../../physical-phone-stationary-checkpoint.json) records exact inspection
 time, age at inspection and a SHA-256 digest of non-coordinate sample metadata.
 The digest does not export samples, coordinates or raw sensor values.
 

@@ -41,7 +41,7 @@ const fs=require('node:fs'),path=require('node:path');
    return ['localhost','127.0.0.1'].includes(u.hostname)?r.continue():r.abort();
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');
-  await page.getByRole('button',{name:'Research & Testing',exact:true}).click();await page.getByRole('button',{name:'School test tools',exact:true}).click();await page.getByLabel('Daily Plan service date',{exact:true}).fill('2026-10-19');await page.getByText('Review stopping locations',{exact:true}).click();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByText('Administrator tools',{exact:true}).click();await page.getByRole('button',{name:'School test tools',exact:true}).click();await page.getByLabel('Daily Plan service date',{exact:true}).fill('2026-10-19');await page.getByText('Review stopping locations',{exact:true}).click();
   await page.getByRole('region',{name:'Daily transport summary'}).getByText('8',{exact:true}).waitFor();assert.equal(await page.getByRole('region',{name:'Daily transport summary'}).getByText('7',{exact:true}).count(),1);
   assert.equal(await page.getByLabel('TEST_03 pm attendance',{exact:true}).inputValue(),'no');
   await page.getByRole('region',{name:'Daily transport summary'}).getByText(/Schools:.*Horizon College International/).waitFor();

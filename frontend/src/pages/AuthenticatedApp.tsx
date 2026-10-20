@@ -1,4 +1,6 @@
-import { CalendarDays, MapPin, Bell, Settings, FlaskConical } from 'lucide-react';
+import { WorkspaceHeader } from '../components/WorkspaceHeader';
+import { OperationsOverview } from './OperationsOverview';
+import { CalendarDays, MapPin, Bell, Settings, LayoutDashboard, Shield, Camera, CreditCard, AlertTriangle } from 'lucide-react';
 import { ResearchEvaluation } from '../components/ResearchEvaluation';
 import { ModelEvaluation } from '../components/ModelEvaluation';
 import { FormEvent,useEffect,useState } from 'react';
@@ -43,31 +45,37 @@ function ParentView(){
 }
 
 export function AuthenticatedApp({demo}:{demo:React.ReactNode}){
-  const auth=useAuth();const {setRole}=useAppContext();const [tab,setTab]=useState('Daily Plan'),[vehicle,setVehicle]=useState(''),[direction,setDirection]=useState<RouteDirection>('morning'),[error,setError]=useState('');
+  const auth=useAuth();const {setRole}=useAppContext();
+  const [tab,setTab]=useState('Overview'),[vehicle,setVehicle]=useState(''),[direction,setDirection]=useState<RouteDirection>('morning'),[error,setError]=useState(''),[menu,setMenu]=useState(false);
   useEffect(()=>{setRole(null);setVehicle(auth.user?.vehicle_ids[0]??'');},[auth.user?.id,auth.user?.mode,setRole]);
-  if(auth.loading)return <p className="p-8">Checking authenticated session…</p>;
+  if(auth.loading)return <p role="status" className="p-8">Checking session...</p>;
   if(!auth.user)return <Login/>;
   const user=auth.user;
-  const navigation=[{label:'Daily Plan',icon:CalendarDays},{label:'Live Tracking',icon:MapPin},{label:'Alerts',icon:Bell},{label:'Setup',icon:Settings},{label:'Research & Testing',icon:FlaskConical}];
-  return <div className={user.mode==='real'&&user.role==='driver'?'h-dvh min-h-0 flex flex-col overflow-hidden bg-slate-50':'min-h-screen bg-slate-50'}><header className="shrink-0 bg-[#176B87] text-white px-5 py-3 flex flex-wrap gap-3 items-center relative z-[100]">
-    <span className="flex-1">{user.username} · {user.role} · {user.mode==='demo'?'SYNTHETIC DEMO':'Authenticated operations'}</span>
-    <button className="border rounded px-3 py-1" onClick={()=>{setError('');void auth.logout().catch(e=>setError(e.message));}}>Log out</button>
-  </header>{user.mode==='real'&&<p className="shrink-0 px-5 py-2 text-xs text-slate-500 border-b bg-white">{user.role==='driver'?'Authenticated routing / unrelated teammate features: Not connected.':'Cabin safety, camera, RFID and emergency teammate features: Not connected. Synthetic component demonstrations are available only in the separate authenticated simulation workspace.'}</p>}{error&&<p role="alert" className="p-3 text-red-700">Logout failed: {error}. Server authorization has not been confirmed revoked; retry.</p>}
-    {user.mode==='demo'?demo:user.role==='administrator'?<>
-      <div className="md:flex min-h-[calc(100vh-5rem)]">
-        <aside className="md:w-60 shrink-0 bg-white border-b md:border-r border-slate-200"><div className="hidden md:flex items-center gap-3 p-6"><BrandLogo className="w-12 h-12 rounded-xl"/><div><p className="font-bold text-[#176B87]">SafeRide-LK</p><p className="text-xs text-slate-500">Routing workspace</p></div></div>
-        <nav aria-label="Administrator workspace" className="grid grid-cols-2 md:flex md:flex-col gap-1 p-3">{navigation.map(({label,icon:Icon})=><button key={label} aria-current={tab===label?'page':undefined} onClick={()=>setTab(label)} className={`flex min-w-0 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-left ${label==='Research & Testing'?'col-span-2 border-t md:mt-3':''} ${tab===label?'bg-[#176B87] text-white shadow-sm':'text-slate-600 hover:bg-slate-50'}`}><Icon size={18}/>{label}</button>)}</nav></aside>
-        <main className="flex-1 min-w-0 p-4 md:p-7 bg-[#F7F9FC]">{tab==='Daily Plan'?<DailyPlan/>:tab==='Live Tracking'?<OperationsFleet/>:tab==='Alerts'?<><h1 className="text-2xl font-bold text-[#176B87] mb-4">Alerts</h1><PersistentNotifications recipient="admin"/></>:tab==='Setup'?<SetupWorkspace/>:<ResearchWorkspace/>}</main>
-      </div>
-    </>:user.role==='driver'?<div className="relative flex-1 min-h-0"><DriverStoredRoute vehicleId={vehicle} direction={direction} onVehicleChange={setVehicle} onDirectionChange={setDirection} onBack={()=>{void auth.logout().catch(e=>setError(e.message));}}/></div>:<ParentView/>}
+  const logout=()=>{setError('');void auth.logout().catch(e=>setError(e.message));};
+  const failure=error&&<p role="alert" className="bg-red-50 p-3 text-sm text-red-700">Logout failed: {error}. Retry logout.</p>;
+  if(user.mode==='demo')return <>{failure}<div className="bg-amber-50 p-2 text-xs flex justify-between">Synthetic demo workspace<button onClick={logout}>Log out</button></div>{demo}</>;
+  if(user.role==='driver')return <div className="h-dvh flex flex-col bg-[#F7F9FC]">{failure}<div className="relative flex-1 min-h-0"><DriverStoredRoute accountName={user.username} vehicleId={vehicle} direction={direction} onVehicleChange={setVehicle} onDirectionChange={setDirection} onBack={logout}/></div></div>;
+  if(user.role!=='administrator')return <><WorkspaceHeader title="SafeRide-LK" username={user.username} onLogout={logout}/>{failure}<ParentView/></>;
+  const navigation=[{label:'Overview',icon:LayoutDashboard},{label:'Daily Plan',icon:CalendarDays},{label:'Live Fleet',icon:MapPin},{label:'Notifications',icon:Bell},{label:'Settings',icon:Settings}];
+  const date=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Colombo',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  return <div className="flex min-h-screen bg-[#F7F9FC]">
+    {menu&&<button aria-label="Close navigation backdrop" className="fixed inset-0 z-[1900] bg-slate-900/40 md:hidden" onClick={()=>setMenu(false)}/>}
+    <aside className={`${menu?'flex':'hidden'} md:flex fixed md:sticky top-0 left-0 z-[2000] md:z-30 w-64 h-dvh shrink-0 flex-col bg-white border-r border-slate-200`}>
+      <div className="p-6 border-b border-slate-100 flex items-center gap-3"><BrandLogo className="h-12 w-12 rounded-xl shadow-sm"/><div><p className="text-xl font-bold text-[#176B87] leading-tight">SafeRide-LK</p><p className="text-[11px] text-slate-500 mt-1">School transport routing</p></div></div>
+      <nav aria-label="Administrator workspace" className="flex-1 overflow-y-auto py-4"><ul className="space-y-1 px-3">{navigation.map(({label,icon:Icon})=><li key={label}><button aria-current={tab===label?'page':undefined} onClick={()=>{setTab(label);setMenu(false);}} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${tab===label?'bg-[#176B87] text-white':'text-slate-600 hover:bg-slate-50 hover:text-[#176B87]'}`}><Icon size={18}/>{label}</button></li>)}</ul>
+      <div className="mx-3 mt-6 border-t pt-4 space-y-1">{[{label:'Safety',icon:Shield},{label:'Camera',icon:Camera},{label:'RFID',icon:CreditCard},{label:'Emergency',icon:AlertTriangle}].map(({label,icon:Icon})=><button key={label} disabled className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400"><Icon size={18}/><span className="flex-1 text-left">{label}</span><span className="text-[10px]">Not connected</span></button>)}</div></nav>
+    </aside>
+    <div className="flex-1 flex flex-col min-w-0"><WorkspaceHeader title={tab} subtitle={date} username={user.username} onLogout={logout} onMenu={()=>setMenu(!menu)}/>{failure}
+      <main className="flex-1 p-4 md:p-8 min-w-0">{tab==='Overview'?<OperationsOverview onPlan={()=>setTab('Daily Plan')} onAlerts={()=>setTab('Notifications')}/>:tab==='Daily Plan'?<DailyPlan/>:tab==='Live Fleet'?<OperationsFleet/>:tab==='Notifications'?<PersistentNotifications recipient="admin"/>:<SetupWorkspace/>}</main>
+    </div>
   </div>;
 }
 
 function SetupWorkspace(){
- const [section,setSection]=useState('Access');
- return <section className="space-y-5"><div><h1 className="text-2xl font-bold text-[#176B87]">Setup</h1><p className="text-sm text-slate-500">Authorized assignments and transport records. Hasara integration remains provisional.</p></div><nav aria-label="Setup sections" className="flex gap-2">{['Access','Students'].map(label=><button key={label} aria-pressed={section===label} onClick={()=>setSection(label)} className={`px-4 py-2 rounded-lg ${section===label?'bg-[#176B87] text-white':'bg-white border'}`}>{label}</button>)}</nav>{section==='Access'?<AccountAccess/>:<StudentsPage/>}</section>;
+ const [section,setSection]=useState('Access');const [toolsOpen,setToolsOpen]=useState(false);
+ return <section className="space-y-5"><div><h1 className="text-2xl font-bold text-[#176B87]">Settings</h1><p className="text-sm text-slate-500">Authorized assignments and transport records. Hasara integration remains provisional.</p></div><nav aria-label="Settings sections" className="flex gap-2">{['Access','Students'].map(label=><button key={label} aria-pressed={section===label} onClick={()=>setSection(label)} className={`px-4 py-2 rounded-lg ${section===label?'bg-[#176B87] text-white':'bg-white border'}`}>{label}</button>)}</nav><details className="bg-white border rounded-xl p-4" onToggle={event=>setToolsOpen(event.currentTarget.open)}><summary className="cursor-pointer font-semibold text-[#176B87]">Administrator tools</summary>{toolsOpen&&<ResearchWorkspace/>}</details>{section==='Access'?<AccountAccess/>:<StudentsPage/>}</section>;
 }
 function ResearchWorkspace(){
- const [section,setSection]=useState('Adult research');
- return <section className="space-y-5"><div><h1 className="text-2xl font-bold text-[#176B87]">Research & Testing</h1><p className="text-sm text-amber-800">Separate adult research, synthetic testing and provisional integration tools. Not student-trip evidence.</p></div><nav aria-label="Research sections" className="flex flex-wrap gap-2">{['Adult research','School test tools','Evaluation','Routes'].map(label=><button key={label} aria-pressed={section===label} onClick={()=>setSection(label)} className={`px-4 py-2 rounded-lg ${section===label?'bg-[#176B87] text-white':'bg-white border'}`}>{label}</button>)}</nav>{section==='Adult research'?<AdultResearch/>:section==='School test tools'?<DailyPlan researchTools/>:section==='Evaluation'?<><ModelEvaluation/><ResearchEvaluation/></>:<RouteOptimization/>}</section>;
+ const [section,setSection]=useState('Evaluation');
+ return <section className="space-y-5"><div><h1 className="text-2xl font-bold text-[#176B87]">Research and evaluation tools</h1><p className="text-sm text-amber-800">Separate adult research, synthetic testing and provisional integration tools. Not student-trip evidence.</p></div><nav aria-label="Research sections" className="flex flex-wrap gap-2">{['Adult research','School test tools','Evaluation','Routes'].map(label=><button key={label} aria-pressed={section===label} onClick={()=>setSection(label)} className={`px-4 py-2 rounded-lg ${section===label?'bg-[#176B87] text-white':'bg-white border'}`}>{label}</button>)}</nav>{section==='Adult research'?<AdultResearch/>:section==='School test tools'?<DailyPlan researchTools/>:section==='Evaluation'?<><ModelEvaluation/><ResearchEvaluation/></>:<RouteOptimization/>}</section>;
 }

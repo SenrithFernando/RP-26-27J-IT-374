@@ -32,36 +32,50 @@ const fs=require('node:fs'),path=require('node:path');
    });
    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');
    if(admin){
-    await page.getByRole('heading',{name:'1. Review attendance',exact:true}).waitFor();
+    await page.getByRole('heading',{name:'Overview',exact:true}).waitFor();
+    assert.equal(await page.getByRole('button',{name:/Not connected/,includeHidden:true}).count(),4);
+    for(const button of await page.getByRole('button',{name:/Not connected/,includeHidden:true}).all())assert.equal(await button.isDisabled(),true);
+    fs.mkdirSync(path.resolve(__dirname,'../node_modules/.cache'),{recursive:true});
+    await page.screenshot({path:path.resolve(__dirname,'../node_modules/.cache/pp1-overview-1366.png')});
+    await page.getByRole('button',{name:'Settings',exact:true}).click();
+    assert.equal(await page.getByRole('region',{name:'Travel-time Evaluation'}).count(),0);
+    await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.resolve(__dirname,'../node_modules/.cache/pp1-settings-390.png')});
+    await page.setViewportSize({width:1366,height:900});
+    await page.getByRole('button',{name:'Daily Plan',exact:true}).click();
+    await page.getByRole('button',{name:'Edit attendance',exact:true}).waitFor();
     assert.equal(await page.getByLabel('Daily Plan service date',{exact:true}).inputValue(),today);
     const nav=page.getByRole('navigation',{name:'Administrator workspace'});
-    assert.deepEqual(await nav.getByRole('button').allTextContents(),['Daily Plan','Live Tracking','Alerts','Setup','Research & Testing']);
+    assert.deepEqual(await nav.locator('button:not(:disabled)').allTextContents(),['Overview','Daily Plan','Live Fleet','Notifications','Settings']);
     assert.equal(await page.getByLabel('Controlled traffic adapter failure').count(),0);
     assert.equal(await page.getByLabel('Provisional registration event JSON').count(),0);
     assert.equal(await page.getByRole('region',{name:'Travel-time Evaluation'}).count(),0);
-    await page.getByRole('heading',{name:'3. Review and publish',exact:true}).waitFor();
+    assert.equal(await page.locator('details').count(),0);
     await page.getByText('Version 91',{exact:false}).first().waitFor();
-    assert.deepEqual(await page.locator('[aria-label="morning Daily Plan"] li').allTextContents(),stops.map(s=>`${s.sequence}. ${s.action}: ${s.name}Arrival 06:05:00 · service 06:05:00–06:05:00 · onboard 0→0`));
-    await page.getByText('Version 92',{exact:false}).first().waitFor();
+    for(const d of ['morning','afternoon']){
+     await page.getByRole('button',{name:d==='morning'?'Open AM route':'Open PM route',exact:true}).click();
+     const dialog=page.getByRole('dialog',{name:d==='morning'?'Morning route':'Afternoon route',exact:true});
+     assert.deepEqual(await dialog.getByRole('list',{name:`${d} ordered stops`}).locator('li p:first-child').allTextContents(),(d==='morning'?stops:pmRoute.stops).map(s=>s.name));
+     await dialog.getByRole('button',{name:d==='morning'?'Close Morning route':'Close Afternoon route',exact:true}).click();
+    }
     const before=calls.filter(c=>c.method!=='GET').length;
     await page.getByLabel('Daily Plan service date',{exact:true}).fill('2026-10-22');await page.waitForTimeout(150);
     assert.equal(calls.filter(c=>c.method!=='GET').length,before);
    }else{
-    await page.getByRole('region',{name:'Selected route summary'}).getByText('Plan v91',{exact:false}).waitFor();
-    const gps=page.getByRole('region',{name:'Vehicle GPS status'});await gps.getByText('Waiting for GPS',{exact:true}).waitFor();
+    await page.getByRole('region',{name:'Selected route summary'}).getByText(/(?:Fixed|Published) v91/).waitFor();
+    const gps=page.getByRole('region',{name:'Vehicle GPS status'});await gps.getByText('No GPS',{exact:true}).waitFor();
     assert.equal(await page.getByText('UI_OLD_POSITION',{exact:false}).count(),0);
-    if(state==='ACTIVE'&&trip)await page.getByRole('region',{name:'Next stop navigation'}).getByText('Stop 2: Synthetic pickup',{exact:false}).waitFor();
+    if(state==='ACTIVE'&&trip)await page.getByRole('region',{name:'Next stop navigation'}).getByText('Synthetic pickup',{exact:true}).waitFor();
     if(scenario==='driver-planned'){
-     assert.equal(await page.getByRole('button',{name:'Start trip (manual prototype)',exact:true}).count(),1);
-     assert.equal(await page.getByRole('button',{name:'Create planned trip (manual prototype)',exact:true}).count(),0);
+     assert.equal(await page.getByRole('button',{name:'Start trip',exact:true}).count(),1);
+     assert.equal(await page.getByRole('button',{name:'Prepare trip',exact:true}).count(),0);
     }
-    if(scenario==='driver-no-trip')assert.equal(await page.getByRole('button',{name:'Create planned trip (manual prototype)',exact:true}).count(),1);
+    if(scenario==='driver-no-trip')assert.equal(await page.getByRole('button',{name:'Prepare trip',exact:true}).count(),1);
     if(scenario==='driver-completed'){
-     await page.getByRole('heading',{name:'Trip route',exact:true}).waitFor();
+     await page.getByRole('button',{name:'View itinerary',exact:true}).click();
      assert.deepEqual(await page.getByRole('list',{name:'Fixed trip actions'}).locator(':scope > li').evaluateAll(els=>els.map(e=>e.querySelector('p').textContent)),stops.map(s=>s.name));
-     assert.equal(await page.getByRole('region',{name:'Next stop navigation'}).count(),0);
+     assert.equal(await page.getByRole('region',{name:'Next stop navigation'}).count(),0);await page.getByRole('button',{name:'Close Fixed trip itinerary',exact:true}).click();
     }
-    const sessions=page.getByText('Tracking sessions and revocation history',{exact:true});await sessions.waitFor();
+    assert.equal(await page.getByText('Tracking sessions and revocation history',{exact:true}).count(),0);
     assert.equal(await page.getByText('Old revoked fixture',{exact:false}).isVisible(),false);
    }
    for(const viewport of [{width:1366,height:900},{width:390,height:844}]){
@@ -69,7 +83,7 @@ const fs=require('node:fs'),path=require('node:path');
     fs.mkdirSync(path.resolve(__dirname,'../node_modules/.cache'),{recursive:true});
     await page.screenshot({path:path.resolve(__dirname,`../node_modules/.cache/presentation-${scenario}-${viewport.width}.png`)});
    }
-   if(scenario==='driver-no-trip'){await page.getByText('Change vehicle, date or direction',{exact:true}).click();await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();await page.getByRole('region',{name:'Selected route summary'}).getByText('Plan v92',{exact:false}).waitFor();assert.deepEqual(await page.getByRole('list',{name:'Driver stored actions'}).locator(':scope > li').evaluateAll(els=>els.map(e=>e.querySelector('p').textContent)),pmRoute.stops.map(s=>s.name));}
+   if(scenario==='driver-no-trip'){await page.getByRole('button',{name:'Choose route',exact:true}).click();await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();await page.getByRole('button',{name:'Use selected route',exact:true}).click();await page.getByRole('region',{name:'Selected route summary'}).getByText('Published v92',{exact:false}).waitFor();await page.getByRole('button',{name:'View published itinerary',exact:true}).click();assert.deepEqual(await page.getByRole('list',{name:'Driver stored actions'}).locator(':scope > li').evaluateAll(els=>els.map(e=>e.querySelector('p').textContent)),pmRoute.stops.map(s=>s.name));}
    if(scenario==='driver-active'){const navigation=page.getByRole('region',{name:'Next stop navigation'});await navigation.scrollIntoViewIfNeeded();await page.screenshot({path:path.resolve(__dirname,'../node_modules/.cache/presentation-driver-navigation-390.png')});}
    assert.ok(calls.every(c=>c.method==='GET'));assert.ok(!calls.some(c=>/map-image|generate|geocode|predict/.test(c.path)));assert.deepEqual(errors,[]);
    passed.push(scenario);await context.close();

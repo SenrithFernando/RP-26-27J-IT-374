@@ -4,7 +4,7 @@ import { localTime } from './PositionStatus';
 
 export const PHONE_QUEUE_LIMIT=30,PHONE_QUEUE_TTL_MS=120000,PHONE_MAX_ATTEMPTS=5;
 /** Foreground-only, in-memory queue. Credentials and coordinates never enter URLs/storage. */
-export function PhoneGpsCapture({credential,expiresAt}:{credential:string;expiresAt:string}){
+export function PhoneGpsCapture({credential,expiresAt,onStatusChange}:{credential:string;expiresAt:string;onStatusChange?:(state:string)=>void}){
   const [sharing,setSharing]=useState(false),[state,setState]=useState('Ready'),[error,setError]=useState('');
   const [queued,setQueued]=useState(0),[discarded,setDiscarded]=useState(0);
   const [captureAccuracy,setCaptureAccuracy]=useState<number|null>(null);
@@ -72,17 +72,18 @@ export function PhoneGpsCapture({credential,expiresAt}:{credential:string;expire
     document.addEventListener('visibilitychange',visibility);window.addEventListener('online',online);capture();
     return()=>{alive=false;clearWatch();controller?.abort();clearInterval(timer);queue=[];stop.current=null;document.removeEventListener('visibilitychange',visibility);window.removeEventListener('online',online);};
   },[sharing,credential,expiresAt]);
+  useEffect(()=>{onStatusChange?.(state);},[state,onStatusChange]);
   const age=last?Math.max(0,(clock-Date.parse(last.recorded))/1000):null;
   return <section aria-label="Actual phone GPS sharing" className="border rounded-lg p-3 space-y-2">
     <h4 className="font-semibold">Actual phone GPS — foreground browser</h4>
     <p role="status">Sharing state: {state}</p>{error&&<p role="alert" className="text-red-700">{error}</p>}
     <button disabled={sharing} onClick={()=>{setError('');setSharing(true);}} className="bg-[#176B87] text-white rounded px-3 py-2 disabled:opacity-40">Start sharing</button>
     <button disabled={!sharing} onClick={()=>stop.current?.()} className="ml-2 underline disabled:opacity-40">Stop sharing</button>
-    <p>Queued: {queued} / {PHONE_QUEUE_LIMIT}; discarded: {discarded}. Memory only; refresh, logout, vehicle/trip change or stop clears pending samples.</p>
+    <p className="text-xs text-slate-500">Pending uploads: {queued} / discarded: {discarded}</p>
     <p>Last successful upload: {localTime(last?.received)} (Sri Lanka)</p><p>Last uploaded observation: {localTime(last?.recorded)}</p>
     <p>Latest captured accuracy: {captureAccuracy==null?'Unavailable':`${captureAccuracy} m`} (browser-reported)</p>
     <p>Uploaded accuracy: {last?.accuracy==null?'Unavailable':`${last.accuracy} m`} / {last?.quality??'unknown'}</p>
     <p>Uploaded observation freshness: {age==null?'unknown':age>60?'stale':last?.quality==='poor'?'unknown — poor accuracy':'fresh'} / age {age==null?'Unavailable':`${Math.floor(age)} s`}</p>
-    <p>Capture is opt-in. Keep Chrome visible and the screen awake. Missing speed stays unavailable; GPS loss is not a stopped vehicle. Stop sharing does not end the trip. Backend latest-position status is shown separately.</p>
+    <p className="text-xs text-amber-900">Keep Chrome foregrounded and the screen awake. Stop sharing does not end the trip.</p>
   </section>;
 }

@@ -5,7 +5,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
  try{
   const context=await browser.newContext({viewport:{width:390,height:844}});
   await context.addInitScript(()=>{sessionStorage.setItem('saferide.login','synthetic-navigation-ui-only');Object.defineProperty(navigator,'clipboard',{value:{writeText:async value=>window.__copiedNavigation=value},configurable:true});});
-  let sequence=1,arrived=false,confirmed=true,invalid=false,mismatch=false,fail=false,completed=false;
+  let sequence=1,arrived=false,confirmed=true,invalid=false,mismatch=false,fail=false,completed=false,wrongEvent=false,staleArrival=null;
   const writes=[],external=[];
   const stops=[1,2,3].map((n)=>({sequence:n,event_id:`STOP_${n}`,location_id:`L${n}`,name:n===3?'Synthetic depot':`Synthetic landmark ${n}`,
    action:n===3?'end':'pickup',latitude:n===1?6.9:n===2?-6.91:0,longitude:n===1?79.9:n===2?79.91:0,
@@ -15,7 +15,7 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    request_settings:{provider:'simulation'},stops:stops.map(s=>({...s,location_confirmed:confirmed,latitude:invalid?100:s.latitude})),provider_source:{duration_source:'simulation'},feasibility_status:'feasible',is_current:false,execution_status:'active',roster_version:1,errors:[],planning_errors:[]};}
   function arrival(){return {trip_id:'UI_NAV_T',route_id:mismatch?'OTHER_ROUTE':'SAVED_NAV',state:arrived?'arrived':'approaching',gps_status:'fresh',
    current_stop:{...route().stops[sequence-1]},settings:{radius_metres:50,exit_radius_metres:75,dwell_seconds:15,min_observations:3,max_gap_seconds:10,freshness_seconds:20},
-   arrival_event:arrived?{event_id:'SYNTHETIC_ARRIVAL',arrived_at:'2026-10-19T15:01:00+05:30',source:'simulation'}:null,can_advance:arrived&&sequence<3,observation_count:3};}
+   arrival_event:arrived?{event_id:'SYNTHETIC_ARRIVAL',route_id:route().route_id,stop_sequence:wrongEvent?99:sequence,arrived_at:'2026-10-19T15:01:00+05:30',source:'simulation'}:null,can_advance:arrived&&sequence<3,observation_count:3};}
   await context.route('**/*',r=>{
    const u=new URL(r.request().url()),p=u.pathname;const send=(v,status=200)=>r.fulfill({status,contentType:'application/json',body:JSON.stringify(v)});
    if(!['127.0.0.1','localhost'].includes(u.hostname)){external.push(u);return r.fulfill({body:'External navigation intercepted; no provider request.'});}
@@ -23,10 +23,11 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    if(p==='/api/auth/me')return send({id:'UI_DRIVER',username:'synthetic.navigation',role:'driver',mode:'real',expires_at:new Date(Date.now()+3600000).toISOString(),vehicle_ids:['UI_NAV_V'],student_ids:[]});
    if(p==='/api/routing/vehicles')return send([{id:'UI_NAV_V',capacity:20,input_source:'simulated'}]);
    if(p==='/api/routes/published')return send({published_route:null,publication_status:'published',trip:{trip_id:'UI_NAV_T',vehicle_id:'UI_NAV_V',direction:'afternoon',state:completed?'COMPLETED':'ACTIVE',route_id:'SAVED_NAV',route_version:28,route:route(),unfinished_actions:[],unfinished_action_count:0}});
+   if(p==='/api/trips/UI_NAV_T/arrival'&&staleArrival){const old=staleArrival;staleArrival=null;return send(old);}
    if(p==='/api/trips/UI_NAV_T/arrival')return fail?send({detail:'Controlled arrival unavailable'},503):send(arrival());
    if(p==='/api/trips/UI_NAV_T/advance-stop'){
     writes.push({method:r.request().method(),sequence:u.searchParams.get('expected_stop_sequence')});
-    assert.equal(r.request().method(),'POST');assert.ok(arrived&&sequence<3);sequence++;arrived=false;return send(arrival());
+    assert.equal(r.request().method(),'POST');assert.ok(arrived&&sequence<3);staleArrival=arrival();sequence++;arrived=false;return send(arrival());
    }
    if(r.request().method()!=='GET')writes.push({unexpected:p});
    if(p.endsWith('/positions/latest'))return send({position:null,status:'unknown',age_seconds:null});
@@ -35,8 +36,8 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
    return send({detail:'Synthetic evidence unavailable'},404);
   });
   const page=await context.newPage();page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByText('Change vehicle, date or direction',{exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
-  await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();
+  await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Choose route',exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
+  await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();await page.getByRole('button',{name:'Use selected route',exact:true}).click();
   const panel=page.getByRole('region',{name:'Next stop navigation',exact:true});const link=panel.getByRole('link',{name:'Navigate to next stop',exact:true});
   await link.waitFor();const href=await link.getAttribute('href');let u=new URL(href);
   assert.equal(u.hostname,'www.google.com');assert.equal(u.searchParams.get('destination'),'6.9,79.9');
@@ -46,9 +47,9 @@ const {chromium}=require('playwright');const assert=require('node:assert/strict'
   await panel.getByRole('button',{name:'Copy link for navigation device',exact:true}).click();assert.equal(await page.evaluate(()=>window.__copiedNavigation),href);
   const popup=await Promise.all([page.waitForEvent('popup'),link.click()]);await popup[0].close();
   assert.equal(sequence,1);assert.equal(writes.length,0);await panel.getByText('Opening Maps did not advance this trip.',{exact:false}).waitFor();
-  arrived=true;await panel.getByText('Arrival recorded.',{exact:false}).waitFor();assert.equal(await link.count(),0);
+  arrived=true;wrongEvent=true;await page.waitForTimeout(2300);assert.equal(await page.getByRole('button',{name:'Next stop (manual; no passenger confirmation)',exact:true}).count(),0);wrongEvent=false;await panel.getByText('Arrival recorded.',{exact:false}).waitFor();assert.equal(await link.count(),0);
   await page.getByRole('button',{name:'Next stop (manual; no passenger confirmation)',exact:true}).click();
-  await link.waitFor();u=new URL(await link.getAttribute('href'));assert.equal(u.searchParams.get('destination'),'-6.91,79.91');assert.deepEqual(writes,[{method:'POST',sequence:'1'}]);
+  await link.waitFor({timeout:700});u=new URL(await link.getAttribute('href'));assert.equal(u.searchParams.get('destination'),'-6.91,79.91');await page.waitForTimeout(2300);assert.equal(new URL(await link.getAttribute('href')).searchParams.get('destination'),'-6.91,79.91');assert.deepEqual(writes,[{method:'POST',sequence:'1'}]);
   confirmed=false;await panel.getByText('Navigation is disabled.',{exact:false}).waitFor();assert.equal(await link.count(),0);
   confirmed=true;invalid=true;await page.waitForTimeout(2300);assert.equal(await link.count(),0);
   invalid=false;mismatch=true;await panel.getByText('Current authorized stop unavailable.',{exact:false}).waitFor();assert.equal(await link.count(),0);

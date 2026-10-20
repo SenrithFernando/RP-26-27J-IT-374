@@ -55,8 +55,8 @@ const assert=require('node:assert/strict');
   {
    const {page,uploads}=await setup('offline');
    await page.evaluate(()=>{for(let i=0;i<35;i++)window.phoneOk({timestamp:Date.now()+i*5000,coords:{latitude:6.9,longitude:79.9,accuracy:9,speed:null}});});
-   await page.getByText('Queued: 30 / 30',{exact:false}).waitFor();assert.equal(uploads.length,0);
-   await page.getByRole('button',{name:'Stop sharing',exact:true}).click();await page.getByText('Queued: 0 / 30',{exact:false}).waitFor();
+   await page.getByText('Pending uploads: 30',{exact:false}).waitFor();assert.equal(uploads.length,0);
+   await page.getByRole('button',{name:'Stop sharing',exact:true}).click();await page.getByText('Pending uploads: 0',{exact:false}).waitFor();
    checks.push('offline queue bounded to 30; stop discards queued samples');await page.close();
   }
   {

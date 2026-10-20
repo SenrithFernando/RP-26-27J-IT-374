@@ -1,4 +1,4 @@
-﻿# Stage 3: confirmed locations and Leaflet maps
+# Stage 3: confirmed locations and Leaflet maps
 
 ## Behavior
 

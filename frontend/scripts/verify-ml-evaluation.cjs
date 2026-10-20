@@ -20,7 +20,7 @@ const fs=require('node:fs'),path=require('node:path');
   return send({detail:'Isolated endpoint unavailable'},404);
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- async function open(){await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');await page.getByRole('button',{name:'Research & Testing',exact:true}).click();await page.getByRole('button',{name:'Evaluation',exact:true}).click();await page.getByText('Synthetic-trained ML evaluation',{exact:true}).click();}
+ async function open(){await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');if(page.viewportSize().width<768)await page.getByRole('button',{name:'Open navigation',exact:true}).click();await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByText('Administrator tools',{exact:true}).click();await page.getByRole('button',{name:'Evaluation',exact:true}).click();await page.getByText('Synthetic-trained ML evaluation',{exact:true}).click();}
  await open();await page.getByText('Samples: 2000 total / 1500 development / 500 untouched final test; 400 synthetic trips.',{exact:true}).waitFor();
  await page.getByRole('cell',{name:'28.013 / 0.467',exact:true}).waitFor();await page.getByRole('cell',{name:'57.087 / 0.951',exact:true}).waitFor();
  await page.getByText('Chronological folds and prediction-time feature schema',{exact:true}).click();await page.getByText(/Fold 4: train 1250/).waitFor();

@@ -27,14 +27,14 @@ const assert=require('node:assert/strict');
       return respond({detail:'Unconfigured UI fixture endpoint'},404);
     });
     const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-    try{await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');await page.getByRole('button',{name:'Log out',exact:true}).waitFor();if(role==='administrator'&&mode!=='demo-workspace')await page.getByRole('button',{name:'Live Tracking',exact:true}).click();await check(page);assert.deepEqual(errors,[]);passed.push(`${role}: ${mode}`);}finally{await context.close();}
+    try{await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://localhost:5173');await page.getByRole('button',{name:'Log out',exact:true}).waitFor();if(role==='administrator'&&mode!=='demo-workspace')await page.getByRole('button',{name:'Live Fleet',exact:true}).click();await check(page);assert.deepEqual(errors,[]);passed.push(`${role}: ${mode}`);}finally{await context.close();}
   }
   try{
     await scenario('administrator','failure',async p=>{
       await p.getByText('Vehicles could not be loaded.',{exact:false}).waitFor();
       assert.equal(await p.getByText('BUS-01',{exact:false}).count(),0);
-      await p.getByRole('button',{name:'Research & Testing',exact:true}).click();await p.getByRole('button',{name:'Routes',exact:true}).click();await p.getByText('Controlled backend unavailable',{exact:false}).first().waitFor();
-      await p.getByRole('button',{name:'Alerts',exact:true}).click();await p.getByText('No mock events are substituted.',{exact:false}).waitFor();
+      await p.getByRole('button',{name:'Settings',exact:true}).click();await p.getByText('Administrator tools',{exact:true}).click();await p.getByRole('button',{name:'Routes',exact:true}).click();await p.getByText('Controlled backend unavailable',{exact:false}).first().waitFor();
+      await p.getByRole('button',{name:'Notifications',exact:true}).click();await p.getByText('No mock events are substituted.',{exact:false}).waitFor();
     });
     await scenario('administrator','empty',async p=>{await p.getByLabel('Fleet vehicle',{exact:true}).getByText('No vehicles available',{exact:true}).waitFor({state:'attached'});});
     await scenario('administrator','no-trip-no-gps',async p=>{
@@ -48,7 +48,7 @@ const assert=require('node:assert/strict');
       await p.getByText('Signal out of date',{exact:true}).waitFor();
       await p.getByText('Simulated GPS',{exact:false}).waitFor();
       await p.getByText('Current movement is unknown.',{exact:false}).waitFor();
-      assert.equal(await p.getByText('Google Maps traffic-aware estimate',{exact:true}).count(),0);
+      assert.equal(await p.getByText('Google traffic',{exact:true}).count(),0);
       await p.getByText('ML prediction',{exact:false}).waitFor();
     });
     await scenario('driver','no-trip-no-gps',async p=>{

@@ -16,7 +16,7 @@ All five have sample_id `28`. Generator: `backend/tests/test_arrivals.py:Arrival
 
 Correction validation additionally checked the exact vehicle/trip pair, all recorded location input sources in the saved route snapshot equal `simulated`, and adjacent samples 27/29 are simulation with identical generated coordinates and recorded times exactly one second either side. A name prefix alone is not accepted as rewrite evidence. Coordinates, addresses, names and credentials are omitted from these reports.
 
-[Before-correction evidence](provenance-fixture-evidence.json) lists safe IDs and derived references. [Preview](provenance-correction-preview.json), [applied result](provenance-correction-result.json), [preservation/idempotency verification](provenance-correction-verification.json).
+[Before-correction evidence](../../provenance-fixture-evidence.json) lists safe IDs and derived references. [Preview](../../provenance-correction-preview.json), [applied result](../../provenance-correction-result.json), [preservation/idempotency verification](../../provenance-correction-verification.json).
 
 ## Actual correction and derived record counts
 
@@ -29,7 +29,7 @@ Correction validation additionally checked the exact vehicle/trip pair, all reco
 
 Before/after full-content comparisons across positions, trips, arrivals, windows, outcomes, transitions, episodes, monitors and notifications verified exactly the five source substitutions and no other changes. All 664 pre-existing positions and 74 trips remained. Existing event counts and contents matched. Historical candidate-reset behaviour was not replayed/recomputed: the audit preserves why the prior input label existed.
 
-The updated isolated fixture integration check subsequently added a new synthetic trip with **17 simulation positions and zero actual-device positions**. Current position totals at this check: **681 simulation, zero actual_device**. Those additional fixture records are separate from the five corrections. [New fixture evidence](provenance-new-fixture-check.json).
+The updated isolated fixture integration check subsequently added a new synthetic trip with **17 simulation positions and zero actual-device positions**. Current position totals at this check: **681 simulation, zero actual_device**. Those additional fixture records are separate from the five corrections. [New fixture evidence](../../provenance-new-fixture-check.json).
 
 ## Implementation and safeguards
 
@@ -46,7 +46,7 @@ The current synthetic trainer still rejects non-synthetic rows. No measured targ
 
 Already run: migration upgrade, correction preview, application, second application, database append-only trigger rejection, full pre-existing-row preservation checks, real-database export/metric rejection of corrected fixture evidence, and the updated isolated arrival integration test (**4/4 passed**).
 
-Network-blocked non-mutating discovery: **40 passed, eight database tests skipped, zero failures/errors** (48 discovered). This includes four new lineage/correction regression tests and an additional in-memory source-change test. [Summary](provenance-regression-checks.json), [log](provenance-regression-checks.txt).
+Network-blocked non-mutating discovery: **40 passed, eight database tests skipped, zero failures/errors** (48 discovered). This includes four new lineage/correction regression tests and an additional in-memory source-change test. [Summary](../../provenance-regression-checks.json), [log](../../provenance-regression-checks.txt).
 
 ```powershell
 Set-Location C:\Users\MSI\Desktop\Safe_Ride_LK\backend

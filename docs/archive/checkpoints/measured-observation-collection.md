@@ -69,7 +69,7 @@ Set-Location C:\Users\MSI\Desktop\Safe_Ride_LK\backend
 .\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-Restart an already-running backend so it loads the new router/models. Keep FastAPI and PostgreSQL private. In another terminal, use the existing configured Vite HTTPS/proxy setup from `docs/phone-https-setup-current.md` / `docs/van01-adult-phone-test.md`; do not change keys, phone origin or network settings for extraction.
+Restart an already-running backend so it loads the new router/models. Keep FastAPI and PostgreSQL private. In another terminal, use the existing configured Vite HTTPS/proxy setup from `docs/archive/checkpoints/phone-https-setup-current.md` / `docs/archive/checkpoints/van01-adult-phone-test.md`; do not change keys, phone origin or network settings for extraction.
 
 ```powershell
 Set-Location C:\Users\MSI\Desktop\Safe_Ride_LK\frontend

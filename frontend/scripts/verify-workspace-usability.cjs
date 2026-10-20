@@ -29,7 +29,7 @@ const fs=require('node:fs'),path=require('node:path');
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');
-  await page.getByRole('button',{name:'Research & Testing',exact:true}).click();await page.getByRole('button',{name:'Evaluation',exact:true}).click();
+  if(page.viewportSize().width<768)await page.getByRole('button',{name:'Open navigation',exact:true}).click();await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByText('Administrator tools',{exact:true}).click();await page.getByRole('button',{name:'Evaluation',exact:true}).click();
   const section=page.getByRole('region',{name:'Travel-time Evaluation',exact:true});
   await section.getByText('Missing prerequisite: enter the research trip ID to load, prepare or export.',{exact:true}).waitFor();
   await section.getByLabel('Research trip ID',{exact:true}).fill('UI_TRIP');

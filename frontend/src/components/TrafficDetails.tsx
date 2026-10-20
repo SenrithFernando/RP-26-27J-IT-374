@@ -3,9 +3,10 @@ import { authHeaders } from '../services/session';
 import { StoredRoute } from '../services/api';
 import { MapLoader } from './MapLoader';
 import type { RouteMapProps } from './RouteMap';
+import { WorkspaceDialog } from './WorkspaceDialog';
 
-export const sourceName = (source?: string) => ({ simulation: 'Simulated traffic', ml_prediction: 'ML prediction · synthetic training',
-  google_live: 'Google Maps traffic-aware estimate', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
+export const sourceName = (source?: string) => ({ simulation: 'Simulation', ml_prediction: 'Experimental ML · synthetic training',
+  google_live: 'Google traffic', historical_baseline: 'Historical baseline · synthetic training', mixed: 'Mixed sources',
   unavailable: 'Unavailable', geographic_zero: 'Colocated · zero travel', start: 'Vehicle start' }[source ?? ''] ?? source ?? 'Source unavailable');
 
 export function SourceBadge({ source }: { source?: string }) {
@@ -29,6 +30,7 @@ export function AlternativeComparison({ route }: { route: StoredRoute }) {
 }
 
 export function TrafficRouteMap({ route, ...props }: RouteMapProps & { route?: StoredRoute | null }) {
+  const [locationsOpen,setLocationsOpen]=useState(false);
   const landmarkTest=props.landmarkTest||route?.daily?.scenario_id==='MALABE_PP1'||!!route?.research_journey;
   const [failedImage, setFailedImage] = useState('');
   const [image,setImage]=useState<{key:string;url:string}|null>(null);
@@ -46,7 +48,7 @@ export function TrafficRouteMap({ route, ...props }: RouteMapProps & { route?: S
   if (route && geometry?.status === 'available' && geometry.map_available && failedImage !== route.route_id) {
     return <div className="space-y-2">{requestedImage!==route.route_id?<><button className="underline text-[#176B87]" onClick={()=>setRequestedImage(route.route_id)}>Load Google road map (up to 1 image request)</button><p className="text-xs">Explicit display request; may incur charges. Page loads and polling do not request this image.</p></>:image?.key===route.route_id?<img src={image.url} alt="Ordered road geometry on a Google Map" className="w-full rounded-xl" onError={() => setFailedImage(route.route_id)} />:<p>Loading authorized map…</p>}
       <p className="text-xs text-slate-600">Road geometry · Google Maps. {geometry.description} Saved road display, not embedded navigation. Live position and stop popups remain in the separate confirmed-locations panel below.</p>
-      <details className="text-xs text-slate-500"><summary className="cursor-pointer">Confirmed locations and stop popups</summary><MapLoader {...props} landmarkTest={landmarkTest} orderedStops={[]} /></details>
+      <button className="text-xs text-[#176B87] underline" onClick={()=>setLocationsOpen(true)}>View confirmed locations</button><WorkspaceDialog title="Confirmed locations" open={locationsOpen} onClose={()=>setLocationsOpen(false)}><MapLoader {...props} landmarkTest={landmarkTest} orderedStops={[]} /></WorkspaceDialog>
     </div>;
   }
   return <div className="space-y-2">{geometry && <p className="text-xs text-amber-800 px-3">{failedImage === route?.route_id ? 'Road map image unavailable; showing stop sequence.' : geometry.reason ?? geometry.map_reason}</p>}<MapLoader {...props} landmarkTest={landmarkTest} /></div>;

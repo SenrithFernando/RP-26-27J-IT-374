@@ -48,7 +48,7 @@ export function OperationsFleet() {
   const field = 'mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#176B87]';
   return <section aria-label="Authorized fleet operations" className="mx-auto max-w-7xl space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><h1 className="text-2xl font-bold tracking-tight text-slate-900">Live Tracking</h1><p className="mt-1 text-sm text-slate-500">Track active trips and view saved routes.</p></div>
+      <p className="text-sm text-slate-500">Track active trips and view saved routes.</p>
       <button type="button" disabled={loading || view.refreshing} onClick={() => { refresh(); setRevision(value => value + 1); }} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={16} className={loading || view.refreshing ? 'animate-spin' : ''} />Refresh</button>
     </div>
     <div className="flex flex-wrap items-end gap-4 rounded-xl border border-slate-200 bg-white p-4">

@@ -47,7 +47,7 @@ Other dates do not inherit attendance; absent entries are unknown.
 The real scenario is saved, but its plans are blocked by unconfirmed locations.
 Only SCH_B has supplied coordinates (6.903543, 79.957162), and these are explicitly
 unconfirmed. No depot, SCH_A or participant coordinates were guessed. The saved
-initial read is [malabe-initial-plan.json](malabe-initial-plan.json); its blocked
+initial read is [malabe-initial-plan.json](../../malabe-initial-plan.json); its blocked
 route IDs/statuses are actual stored reads, not claimed successful optimization.
 Setup never makes geocoding or other paid requests.
 
@@ -129,7 +129,7 @@ Setup never makes geocoding or other paid requests.
 
 ## Provisional adapter contract
 
-Machine-readable version: [provisional-routing-contract-v1.json](provisional-routing-contract-v1.json).
+Machine-readable version: [provisional-routing-contract-v1.json](../../provisional-routing-contract-v1.json).
 Endpoint: authenticated administrator real-workspace POST /daily-plan/import.
 Hasara does not need to implement this exact format; it is our current adapter
 boundary, to be mapped when Hasara's actual format becomes available.
@@ -167,7 +167,7 @@ Actual checkpoint results: 9 landmark rollback tests, 7 authorization rollback
 tests and 20 pure solver/provider/endpoint tests passed. Four Daily Plan browser
 checks and nine existing operations browser scenarios passed using intercepted
 responses; TypeScript and npm run build passed. See
-[malabe-checkpoint-verification.json](malabe-checkpoint-verification.json).
+[malabe-checkpoint-verification.json](../../malabe-checkpoint-verification.json).
 
 ```powershell
 Set-Location C:\Users\MSI\Desktop\Safe_Ride_LK\backend

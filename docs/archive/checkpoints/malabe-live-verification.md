@@ -26,7 +26,7 @@ The latest saved plans are **AM 30 and PM 19, both draft**. Review before
 publication; the command did not start/alter trips or publish automatically.
 Five saved versions were re-read to verify persisted metadata. Exact IDs,
 timestamps, school service times, source counts and errors are in
-[`malabe-live-verification.json`](malabe-live-verification.json).
+[`malabe-live-verification.json`](../../malabe-live-verification.json).
 
 The original smoke assertion expected diagonal entries. Google returned the
 two required cross-school entries and no pair errors; the assertion was too

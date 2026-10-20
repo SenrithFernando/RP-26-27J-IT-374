@@ -1,4 +1,4 @@
-﻿# Stage 2: PostgreSQL Students page
+# Stage 2: PostgreSQL Students page
 
 ## Scope and changed files
 

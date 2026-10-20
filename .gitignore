@@ -112,3 +112,12 @@ Thumbs.db
 **/research_exports/
 **/certs/
 **/.certs/
+# Temporary UI update package
+saferide-ui-update/
+
+# Generated local authentication reports (account metadata and diagnostic output).
+/docs/auth-browser-verification.json
+/docs/auth-local-setup.json
+/docs/auth-regression-checks.json
+/docs/auth-regression-checks.txt
+/docs/auth-verification.json

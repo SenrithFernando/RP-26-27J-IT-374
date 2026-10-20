@@ -44,7 +44,7 @@ let phase='initial';
     assert.deepEqual(options,[config.students[0]]);
     assert.equal(await status('/parent/students/'+config.students[1]),403);
     assert.equal(await page.getByRole('heading',{name:'Choose Interface'}).count(),0);
-    phase='admin login';await logout();await login('admin');await page.getByRole('button',{name:'Setup',exact:true}).click();await page.getByRole('button',{name:'Access',exact:true}).click();
+    phase='admin login';await logout();await login('admin');await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Access',exact:true}).click();
     await page.getByRole('heading',{name:'Accounts and access',exact:true}).waitFor();
     phase='admin directory';await page.getByLabel('Manage account').locator('option').nth(1).waitFor({state:'attached'});
     phase='demo login';await logout();await login('admin','demo');

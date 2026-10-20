@@ -23,16 +23,16 @@ export function useVehiclePosition(vehicleId: string, tripId = '') {
           tripId ? fetchPickupWindows(tripId, request.signal) : Promise.resolve(null),
           tripId ? fetchOperationalEvents(tripId, request.signal) : Promise.resolve(null),
         ]);
-        if (alive && id === sequence) setView({ key,
+        if (alive && id === sequence) setView(previous => ({ key,
           operational: operational.status === 'fulfilled' ? operational.value : null,
           operationalError: operational.status === 'rejected' ? String(operational.reason) : '',
           pickups: pickups.status === 'fulfilled' ? pickups.value : null,
           pickupError: pickups.status === 'rejected' ? String(pickups.reason) : '',
           data: gps.status === 'fulfilled' ? gps.value : null,
           error: gps.status === 'rejected' ? String(gps.reason) : '',
-          arrival: arrival.status === 'fulfilled' ? arrival.value : null,
+          arrival: arrival.status === 'fulfilled' ? (previous.key===key && previous.arrival?.route_id===arrival.value?.route_id && (previous.arrival?.current_stop?.sequence??0)>(arrival.value?.current_stop?.sequence??0) ? previous.arrival : arrival.value) : null,
           arrivalError: arrival.status === 'rejected' ? String(arrival.reason) : '',
-        });
+        }));
       } finally {
         clearTimeout(timeout);
         if (alive && id === sequence && document.visibilityState === 'visible') timer = setTimeout(load, 2000);
@@ -43,5 +43,7 @@ export function useVehiclePosition(vehicleId: string, tripId = '') {
     document.addEventListener('visibilitychange', visibility); void load();
     return () => { alive = false; cancel(); document.removeEventListener('visibilitychange', visibility); };
   }, [vehicleId, tripId, key]);
-  return view.key === key ? view : { key, operational: null, operationalError: '', pickups: null, pickupError: '', arrival: null, arrivalError: '', data: null, error: '' };
+  const shown = view.key === key ? view : { key, operational: null, operationalError: '', pickups: null, pickupError: '', arrival: null, arrivalError: '', data: null, error: '' };
+  const acceptArrival=(next:TripArrival)=>{if(next.trip_id===tripId)setView(previous=>previous.key===key && (!previous.arrival || (previous.arrival.route_id===next.route_id && (next.current_stop?.sequence??0)>=(previous.arrival.current_stop?.sequence??0)))?{...previous,arrival:next,arrivalError:''}:previous);};
+  return {...shown,acceptArrival};
 }

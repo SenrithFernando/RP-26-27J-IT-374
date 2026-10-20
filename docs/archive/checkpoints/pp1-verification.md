@@ -26,18 +26,18 @@ The full backend suite and audit browser results are linked below. A passing syn
 
 ## Actual runs
 
-- [Backend log](pp1-backend-checks.txt) and [run metadata](pp1-test-run.json): 43 tests passed, zero failures/errors/skips, 88.492 seconds, process exit 0, PostgreSQL opt-in enabled; final run includes the freshness correction.
-- [New Admin/Driver browser evidence](pp1-browser-verification.json), [screenshot](pp1-driver.png): real separate tabs plus explicitly injected browser-only error/obsolete-response/visibility fixtures. No browser errors, no Driver writes. OSM tiles deliberately blocked in automation; visual tile availability was not tested.
+- [Backend log](../../pp1-backend-checks.txt) and [run metadata](../../pp1-test-run.json): 43 tests passed, zero failures/errors/skips, 88.492 seconds, process exit 0, PostgreSQL opt-in enabled; final run includes the freshness correction.
+- [New Admin/Driver browser evidence](../../pp1-browser-verification.json), [screenshot](../../pp1-driver.png): real separate tabs plus explicitly injected browser-only error/obsolete-response/visibility fixtures. No browser errors, no Driver writes. OSM tiles deliberately blocked in automation; visual tile availability was not tested.
 - `node ./node_modules/typescript/bin/tsc --noEmit --incremental false`: exit 0 after correcting nine existing type-check issues.
 - `npm run build`: exit 0; Vite 5.4.21, 1,728 modules. Vite build itself does not type-check.
 - Alembic read-only `current`: `0012_operational_episodes (head)`; no new migration required.
-- [Replay output](pp1-replay-check.txt): eight accepted simulation samples, all advanced latest, no duplicates, exit 0. Uses only the newly created S9E fixture; full scenario transitions are verified in controlled-clock integration tests, not all replayed through the real-time CLI.
+- [Replay output](../../pp1-replay-check.txt): eight accepted simulation samples, all advanced latest, no duplicates, exit 0. Uses only the newly created S9E fixture; full scenario transitions are verified in controlled-clock integration tests, not all replayed through the real-time CLI.
 
-Additional saved forced-failure demonstration: [fallback evidence](pp1-fallback-verification.json), route `ROUTE_62699ac77bb94a45bdc7f01de88a670d`, companion PP1 vehicle, feasible with `ml_prediction` and an explicit no-external-request reason. [Live read check](pp1-live-read-check.json) confirms the frontend proxy and backend return the same saved route/version and the running backend has loaded the model.
+Additional saved forced-failure demonstration: [fallback evidence](../../pp1-fallback-verification.json), route `ROUTE_62699ac77bb94a45bdc7f01de88a670d`, companion PP1 vehicle, feasible with `ml_prediction` and an explicit no-external-request reason. [Live read check](../../pp1-live-read-check.json) confirms the frontend proxy and backend return the same saved route/version and the running backend has loaded the model.
 
 ## ML evidence and actual metrics
 
-`backend/ml/artifacts/current.json` selects `synthetic-xgb-v1-26c03624ed36a729`; JSON model, preprocessing, baseline and metrics checksums load successfully. Saved final-test predictions were recomputed from existing artifacts, without fitting anything, and matched every stored aggregate metric ([recomputation](pp1-ml-verification.json)).
+`backend/ml/artifacts/current.json` selects `synthetic-xgb-v1-26c03624ed36a729`; JSON model, preprocessing, baseline and metrics checksums load successfully. Saved final-test predictions were recomputed from existing artifacts, without fitting anything, and matched every stored aggregate metric ([recomputation](../../pp1-ml-verification.json)).
 
 | Evaluation | Samples | XGBoost MAE s (min) | XGBoost RMSE s | Baseline MAE s (min) | Baseline RMSE s |
 |---|---:|---:|---:|---:|---:|

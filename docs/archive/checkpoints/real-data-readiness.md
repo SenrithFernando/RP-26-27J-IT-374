@@ -10,13 +10,13 @@
 
 Inspected backend code, migration revisions 0001?0012, configuration example/loaders, frontend consumers, model artifacts, tests and stage/PP1 documentation. Actual credential values were not printed. No application features, configuration, training data or model artifacts were changed. No existing trip records were modified, replayed or transitioned.
 
-- **35 tests passed, eight database-mutating tests skipped, zero failures/errors** (43 discovered). Socket connections were blocked during discovery/execution, preventing paid external calls. [Summary](real-data-readiness-checks.json), [log](real-data-readiness-checks.txt).
+- **35 tests passed, eight database-mutating tests skipped, zero failures/errors** (43 discovered). Socket connections were blocked during discovery/execution, preventing paid external calls. [Summary](../../real-data-readiness-checks.json), [log](../../real-data-readiness-checks.txt).
 - **TypeScript check and npm run build passed**, exit 0; Vite transformed 1,728 modules.
 - Read-only PostgreSQL transaction and Alembic current agree on **0012_operational_episodes (head)**. No migrations, seed or workers ran.
 - Loaded the existing XGBoost JSON bundle with checksum validation. Training CSV hash matches saved metrics; final-test predictions and baseline metrics recomputed without fitting match the stored report.
 - Inspected main.app OpenAPI in-process without starting lifespan, which would run expiry/planning workers. There are **49 API operations, no security schemes and no operation security requirements**.
 
-[Read-only inventory](real-data-readiness-inventory.json) records endpoints, source counts, safe credential-presence booleans and actual metrics. [Previous PP1 audit](pp1-verification.md) records 43 passing tests with isolated database fixtures and a two-tab Admin/Driver check on 16 October. Those database/browser results are **historical evidence**, not fresh integration checks today.
+[Read-only inventory](../../real-data-readiness-inventory.json) records endpoints, source counts, safe credential-presence booleans and actual metrics. [Previous PP1 audit](pp1-verification.md) records 43 passing tests with isolated database fixtures and a two-tab Admin/Driver check on 16 October. Those database/browser results are **historical evidence**, not fresh integration checks today.
 
 ## Implemented features and evidence boundaries
 

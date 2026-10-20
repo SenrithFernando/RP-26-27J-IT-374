@@ -41,9 +41,10 @@ const fs=require('node:fs');
    });
    const page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>{errors.push(e.message);console.error('Page error:',e.message);});
    await page.goto(process.env.SAFERIDE_UI_TEST_URL||'http://127.0.0.1:5187');
-   await page.getByText('Change vehicle, date or direction',{exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
+   await page.getByRole('button',{name:'Choose route',exact:true}).click();await page.getByLabel('Driver service date',{exact:true}).fill('2026-10-19');
    if(direction==='afternoon')await page.getByRole('button',{name:'Afternoon Drop-off',exact:true}).click();
-   await page.waitForFunction(()=>!document.querySelector('[aria-label="Refreshing route"]'));
+   await page.getByRole('button',{name:'Use selected route',exact:true}).click();
+   if(!['error','no-route'].includes(mode))await page.getByRole('button',{name:trip?'View itinerary':'View published itinerary',exact:true}).click();
    const summary=page.getByRole('region',{name:'Saved planned durations',exact:true}).last();
    if(mode==='error')await page.getByText('Controlled unavailable backend',{exact:false}).waitFor();
    else if(mode!=='no-route')await summary.getByTestId('duration-route').waitFor();
@@ -52,13 +53,14 @@ const fs=require('node:fs');
     assert.equal(await summary.getByTestId('planned-waiting_seconds').textContent(),'Unavailable');
     await summary.getByText('Some estimates are unavailable',{exact:false}).waitFor();
    }else if(['error','no-route'].includes(mode)){
-    assert.equal(await summary.getByTestId('planned-total_duration_seconds').textContent(),'Unavailable');
+    assert.ok((await page.getByRole('region',{name:'Selected route summary'}).textContent()).includes('Unavailable'));
    }else{
     assert.equal(await summary.getByTestId('planned-waiting_seconds').textContent(),'0 min');
-    assert.equal(await summary.getByTestId('planned-total_duration_seconds').textContent(),['completed-am','active-pm'].includes(mode)?'53 min':'54 min');
+    assert.equal(await summary.getByTestId('planned-total_duration_seconds').textContent(),['completed-am','active-pm','wrong-direction'].includes(mode)?'53 min':'54 min');
     const id=await summary.getByTestId('duration-route').textContent();
-    assert.ok(id.includes(['completed-am','active-pm'].includes(mode)?'Version 38':'Version 39'));
+    assert.ok(id.includes(['completed-am','active-pm','wrong-direction'].includes(mode)?'Version 38':'Version 39'));
    }
+   if(!['error','no-route'].includes(mode))await page.getByRole('button',{name:trip?'Close Fixed trip itinerary':'Close Published itinerary',exact:true}).click();
    for(const viewport of [{width:320,height:568},{width:390,height:844}]){
     await page.setViewportSize(viewport);
     const layout=await page.evaluate(()=>{
@@ -74,8 +76,8 @@ const fs=require('node:fs');
     assert.ok(layout.width<=layout.viewport,JSON.stringify(layout));
    }
    if(mode==='active-pm'){
-    await page.getByRole('heading',{name:'Persistent trip lifecycle',exact:true}).scrollIntoViewIfNeeded();
-    assert.ok(await page.getByRole('heading',{name:'Persistent trip lifecycle',exact:true}).isVisible());
+    await page.getByRole('heading',{name:'Trip controls',exact:true}).scrollIntoViewIfNeeded();
+    assert.ok(await page.getByRole('heading',{name:'Trip controls',exact:true}).isVisible());
     const out=path.resolve(__dirname,'../node_modules/.cache/driver-duration-mobile.png');fs.mkdirSync(path.dirname(out),{recursive:true});
     await page.screenshot({path:out});
    }
